@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+option go_package = ".;packets";
+
+package packets;
+
+import "google/protobuf/any.proto";
+
+
+message UserRequest {
+    google.protobuf.Any Data = 1;
+}
+
+message UpdateUserRequest {
+    string UserID = 1;
+    google.protobuf.Any Data = 2;
+}
+
+message UserRequestByID {
+    string UserID = 1;
+}
+
+message UserRequestByUsername {
+    string Username = 1;
+}
+
+message OutputUser {
+    int32 Status = 1;
+    google.protobuf.Any Data = 2;
+}
+
+message UserRequestByIdOrganization {
+    string OrganizationId = 1;
+}
+
+service UmUser {
+    rpc GetUserByIdUsecase(UserRequestByID) returns(OutputUser){}
+    rpc GetListUserUsecase(UserRequest) returns(OutputUser){}
+    rpc CreateUserUsecase(UserRequest) returns(OutputUser){}
+    rpc UpdateUserUsecase(UserRequest) returns(OutputUser){}
+    rpc DeleteUserUsecase(UserRequestByID) returns(OutputUser){}
+    rpc CheckData(UserRequest) returns(OutputUser){}
+    rpc GetUserEqualsUsecase(UserRequest) returns(OutputUser){}
+    rpc ChangePasswordUsecase(UserRequest) returns(OutputUser){}
+    rpc GetUserByUsernameUsecase(UserRequestByUsername) returns(OutputUser){}
+    rpc GetUserByIdOrganizationUsecase(UserRequestByIdOrganization) returns(OutputUser){}
+}

@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+option go_package = ".;packets";
+
+package packets;
+
+import "google/protobuf/any.proto";
+
+message VehRequest {
+    google.protobuf.Any Data = 1;
+}
+
+message VehRequestByChassis {
+    string ChassisNumber = 1;
+}
+
+message VehOutput {
+    int32 Status = 1;
+    google.protobuf.Any Data = 2;
+}
+
+service Vehicle {
+    rpc Vehicle_Get(VehRequest) returns(VehOutput){}
+    rpc Vehicle_GetByChassis(VehRequestByChassis) returns(VehOutput){}
+    // rpc Vehicle_GetStatus(VehRequestByChassis) returns(VehOutput){}
+    rpc Vehicle_Add(VehRequest) returns(VehOutput){}
+    rpc Vehicle_Edit(VehRequest) returns(VehOutput){}
+    // rpc Vehicle_Delete(VehRequest) returns(VehOutput){}
+}

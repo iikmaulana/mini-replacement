@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option go_package = ".;packets";
+
+package packets;
+
+import "google/protobuf/any.proto";
+
+message VehicleReplacementRequest {
+    google.protobuf.Any Data = 1;
+}
+
+message VehicleReplacementOutput {
+    int32 Status = 1;
+    google.protobuf.Any Data = 2;
+}
+
+service VehicleReplacement {
+    rpc CreateMtVehicle(VehicleReplacementRequest) returns(VehicleReplacementOutput){}
+    rpc UpdateMtVehicle(VehicleReplacementRequest) returns(VehicleReplacementOutput){}
+}

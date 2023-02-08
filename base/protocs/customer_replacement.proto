@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+option go_package = ".;packets";
+
+package packets;
+
+import "google/protobuf/any.proto";
+
+message CustomerReplacementRequest {
+    google.protobuf.Any Data = 1;
+}
+
+message CustomerReplacementOutput {
+    int32 Status = 1;
+    google.protobuf.Any Data = 2;
+}
+
+service CustomerReplacement {
+    rpc UpdateMtMember(CustomerReplacementRequest) returns(CustomerReplacementOutput){}
+    rpc CreateMtMember(CustomerReplacementRequest) returns(CustomerReplacementOutput){}
+    rpc UpdateAuthRunner(CustomerReplacementRequest) returns(CustomerReplacementOutput){}
+    rpc CreateAuthRunner(CustomerReplacementRequest) returns(CustomerReplacementOutput){}
+    rpc UserActivation(CustomerReplacementRequest) returns(CustomerReplacementOutput){}
+    rpc ChangePassword(CustomerReplacementRequest) returns(CustomerReplacementOutput){}
+}

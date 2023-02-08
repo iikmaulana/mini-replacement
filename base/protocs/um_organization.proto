@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+option go_package = ".;packets";
+
+package packets;
+
+import "google/protobuf/any.proto";
+
+
+message OrganizationRequest {
+    google.protobuf.Any Data = 1;
+}
+
+message UpdateOrganizationRequest {
+    string OrganizationID = 1;
+    google.protobuf.Any Data = 2;
+}
+
+message OrganizationRequestByID {
+    string OrganizationID = 1;
+}
+
+message OrganizationRequestByCode {
+    string Code = 1;
+}
+
+message OutputOrganization {
+    int32 Status = 1;
+    google.protobuf.Any Data = 2;
+}
+
+service UmOrganization {
+    rpc GetOrganizationByIdUsecase(OrganizationRequestByID) returns(OutputOrganization){}
+    rpc GetListOrganizationUsecase(OrganizationRequest) returns(OutputOrganization){}
+    rpc CreateOrganizationUsecase(OrganizationRequest) returns(OutputOrganization){}
+    rpc UpdateOrganizationUsecase(OrganizationRequest) returns(OutputOrganization){}
+    rpc DeleteOrganizationUsecase(OrganizationRequestByID) returns(OutputOrganization){}
+    rpc CheckData(OrganizationRequest) returns(OutputOrganization){}
+    rpc GetListOrganizationDealerUsecase(OrganizationRequest) returns(OutputOrganization){}
+    rpc GetOrganizationDealerByCodeUsecase(OrganizationRequestByCode) returns(OutputOrganization){}
+    rpc GetListOrganizationKemoodiUsecase(OrganizationRequest) returns(OutputOrganization){}
+}

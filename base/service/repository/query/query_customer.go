@@ -1,0 +1,75 @@
+package query
+
+const (
+	CreateMtMember = `INSERT INTO public.mt_member (
+							member_name,
+							company,
+							email,
+							phone,
+							dealer_id,
+							member_code,
+							company_type,
+							date_registration,
+							status_engage
+							) VALUES ('%s','%s','%s,'%s','%d','%s','%s',now(),'not_active')
+						`
+
+	UpdateMtMember = `UPDATE public.mt_member 
+							SET member_name = '%s',
+							company = '%s',
+							email = '%s',
+							phone = '%s',
+							member_code = '%s',
+							company_type = '%s' 
+						WHERE
+					  		member_id = '%s'
+						`
+
+	CreateAuthRunner = `INSERT INTO public.auth_runner (
+							user_id,
+							username,
+							password,
+							user_fullname,
+							email,
+							role_id,
+							member_id,
+							dealer_id,
+							phone,
+							creation_date
+							) VALUES ('%s','%s','%s,'%s','%s','%s','%s','%s','%s',now())
+						`
+
+	UpdateAuthRunner = `UPDATE public.auth_runner (
+							SET username = '%s',
+							password = '%s',
+							user_fullname = '%s',
+							email = '%s',
+							role_id = '%s',
+							member_id = '%s',
+							dealer_id = '%s',
+							phone = '%s'
+						WHERE
+					  		username = '%s'
+						`
+	UpdateAuthRunnerActivationCustomer = `UPDATE public.auth_runner (
+												SET username = '%s',
+												password = '%s',
+												user_fullname = '%s',
+												email = '%s',
+												role_id = '%s',
+												member_id = '%s',
+												dealer_id = '%s',
+												phone = '%s'
+											WHERE
+												username = '%s'
+											`
+
+	GetMemberIdByOrganizationId = `select member_id from um_runner.public.member_tmp where organization_id = '%s'`
+	GetDealerIdByOrganizationId = `select dealer_id from um_runner.public.member_tmp where organization_id = '%s'`
+
+	ChangePassword = `UPDATE runner_app.auth_runner
+						SET password = '%s'
+					WHERE
+						username = '%s'
+					`
+)

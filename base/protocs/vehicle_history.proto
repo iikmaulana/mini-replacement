@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+option go_package = ".;packets";
+
+package packets;
+
+import "google/protobuf/any.proto";
+
+message VehHistoryRequest {
+    google.protobuf.Any Data = 1;
+}
+
+message VehHistoryRequestByChassis {
+    string ChassisNumber = 1;
+}
+
+message VehHistoryRequestByImei {
+    string Imei = 1;
+}
+
+message VehHistoryRequestByDealerID {
+    string DealerID = 1;
+}
+
+message VehHistoryOutput {
+    int32 Status = 1;
+    google.protobuf.Any Data = 2;
+}
+
+service VehicleHistory {
+    rpc VehicleHistory_Get(VehHistoryRequest) returns(VehHistoryOutput){}
+    rpc VehicleHistory_GetCount(VehHistoryRequest) returns(VehHistoryOutput){}
+    rpc VehicleHistory_GetByChassis(VehHistoryRequest) returns(VehHistoryOutput){}
+    rpc VehicleHistory_GetByImei(VehHistoryRequestByImei) returns(VehHistoryOutput){}
+    rpc VehicleHistory_GetCountByMonth(VehHistoryRequest) returns(VehHistoryOutput){}
+    rpc VehicleHistory_GetCountByOwnerID(VehHistoryRequest) returns(VehHistoryOutput){}
+    rpc VehicleHistory_CheckByChassis(VehHistoryRequestByChassis) returns(VehHistoryOutput){}
+    rpc VehicleHistory_GetOwnerIdByDealerId(VehHistoryRequestByDealerID) returns(VehHistoryOutput){}
+    rpc VehicleHistory_GetVehActiveInactiveByDealerId(VehHistoryRequestByDealerID) returns(VehHistoryOutput){}
+    rpc VehicleHistory_ChangeStatus(VehHistoryRequestByChassis) returns(VehHistoryOutput){}
+    rpc VehicleHistory_ChangeActivationStatus(VehHistoryRequest) returns(VehHistoryOutput){}
+    rpc VehicleHistory_Add(VehHistoryRequest) returns(VehHistoryOutput){}
+    rpc VehicleHistory_Edit(VehHistoryRequest) returns(VehHistoryOutput){}
+    rpc VehicleHistory_ChangeOwnership(VehHistoryRequest) returns(VehHistoryOutput){}
+    rpc VehicleHistory_Deactivate(VehHistoryRequestByChassis) returns(VehHistoryOutput){}
+}
