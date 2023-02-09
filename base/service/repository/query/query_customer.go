@@ -39,7 +39,7 @@ const (
 							) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s',now())
 						`
 
-	UpdateAuthRunner = `UPDATE runner_app.auth_runner (
+	UpdateAuthRunner = `UPDATE runner_app.auth_runner
 							SET username = '%s',
 							password = '%s',
 							user_fullname = '%s',
