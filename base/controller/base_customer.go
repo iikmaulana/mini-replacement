@@ -455,7 +455,7 @@ func (c customerUsecase) ApprovePrivacyPolicyUsecase(form []byte) (result string
 	_ = json.Unmarshal(form, &val)
 
 	var tmpUserId string
-	if err := c.DB.QueryRow(fmt.Sprintf(query.GetUserIdByUsername, tmpUserId)).Scan(&tmpUserId); err != nil {
+	if err := c.DB.QueryRow(fmt.Sprintf(query.GetUserIdByUsername, val["username"].(string))).Scan(&tmpUserId); err != nil {
 		fmt.Println(err.Error())
 	}
 
