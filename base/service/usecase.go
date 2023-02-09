@@ -12,6 +12,7 @@ type CustomerUsecase interface {
 	UserActivationUsecase(form []byte) (result string, serr serror.SError)
 	ChangePasswordUsecase(form []byte) (result string, serr serror.SError)
 	PrivacyPolicyUsecase(form []byte, tmpUserId string) (result string, serr serror.SError)
+	ApprovePrivacyPolicyUsecase(form []byte) (result string, serr serror.SError)
 }
 
 type VehicleUsecase interface {

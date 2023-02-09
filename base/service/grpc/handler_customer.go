@@ -115,7 +115,7 @@ func (handler CustomerHandler) UserActivation(ctx context.Context, form *packets
 		Status: 0,
 	}
 
-	tmpResult, serr := handler.customerUsecase.CreateAuthRunnerUsecase(form.Data.Value)
+	tmpResult, serr := handler.customerUsecase.ApprovePrivacyPolicyUsecase(form.Data.Value)
 	if serr != nil {
 		return output, serr
 	}

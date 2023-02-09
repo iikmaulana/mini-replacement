@@ -55,6 +55,7 @@ const (
 	CreatePrivacyPolicy = `INSERT INTO runner_app.log_privacy_policy (id,policy_id,user_id,"status",accepted_date,created_at) VALUES ('%s',7,'%s',0,NULL,now())`
 	CheckPrivacyPolicy  = `select exists ( select id from runner_app.log_privacy_policy lp where user_id = '%s' limit 1) as value`
 	GetUserIdByUsername = `select user_id from runner_app.auth_runner where username = '%s' limit 1`
+	DeletePrivacyPolicy = `delete from runner_app.log_privacy_policy where user_id = '%s'`
 
 	GetMemberIdByEmailAndMemberName = `select member_id from runner_app.mt_member where email = '%s' and member_name = '%s' limit 1`
 
