@@ -119,7 +119,7 @@ func init() {
 func init() { proto.RegisterFile("vehicle_replacement.proto", fileDescriptor_786464e44a786139) }
 
 var fileDescriptor_786464e44a786139 = []byte{
-	// 219 bytes of a gzipped FileDescriptorProto
+	// 239 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x92, 0x2c, 0x4b, 0xcd, 0xc8,
 	0x4c, 0xce, 0x49, 0x8d, 0x2f, 0x4a, 0x2d, 0xc8, 0x49, 0x4c, 0x4e, 0xcd, 0x4d, 0xcd, 0x2b, 0xd1,
 	0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x2f, 0x48, 0x4c, 0xce, 0x4e, 0x2d, 0x29, 0x96, 0x92,
@@ -129,11 +129,12 @@ var fileDescriptor_786464e44a786139 = []byte{
 	0xe0, 0x36, 0x12, 0xd1, 0x83, 0x18, 0xa3, 0x07, 0x33, 0x46, 0xcf, 0x31, 0xaf, 0x32, 0x08, 0xac,
 	0x42, 0x29, 0x86, 0x4b, 0x02, 0xd3, 0x18, 0xff, 0xd2, 0x92, 0x82, 0xd2, 0x12, 0x21, 0x31, 0x2e,
 	0xb6, 0xe0, 0x92, 0xc4, 0x92, 0xd2, 0x62, 0xb0, 0x39, 0xac, 0x41, 0x50, 0x1e, 0xdc, 0x74, 0x26,
-	0x42, 0xa6, 0x1b, 0x9d, 0x61, 0xe4, 0x12, 0xc2, 0x34, 0x5e, 0x28, 0x8a, 0x8b, 0xdf, 0xb9, 0x28,
-	0x35, 0xb1, 0x24, 0xd5, 0xb7, 0x04, 0x2a, 0x2b, 0xa4, 0xa4, 0x07, 0xf5, 0xb3, 0x1e, 0x4e, 0x5f,
-	0x49, 0x29, 0xe2, 0x51, 0x03, 0x71, 0xb2, 0x12, 0x03, 0xc8, 0xec, 0xd0, 0x82, 0x14, 0x9a, 0x98,
-	0xed, 0xc4, 0x1d, 0xc5, 0xa9, 0x67, 0x0d, 0x55, 0x97, 0xc4, 0x06, 0xf6, 0xaf, 0x31, 0x20, 0x00,
-	0x00, 0xff, 0xff, 0x70, 0xde, 0x20, 0x93, 0xc8, 0x01, 0x00, 0x00,
+	0x42, 0xa6, 0x1b, 0x75, 0x31, 0x73, 0x09, 0x61, 0x1a, 0x2f, 0x14, 0xc5, 0xc5, 0xef, 0x5c, 0x94,
+	0x9a, 0x58, 0x92, 0xea, 0x5b, 0x02, 0x95, 0x15, 0x52, 0xd2, 0x83, 0xfa, 0x59, 0x0f, 0xa7, 0xaf,
+	0xa4, 0x14, 0xf1, 0xa8, 0x81, 0x38, 0x59, 0x89, 0x01, 0x64, 0x76, 0x68, 0x41, 0x0a, 0x6d, 0xcc,
+	0x8e, 0xe5, 0x12, 0x82, 0xb8, 0x1b, 0xaa, 0xc6, 0xbd, 0x28, 0xbf, 0xb4, 0x80, 0xaa, 0xc6, 0x43,
+	0x9c, 0x4e, 0x13, 0xe3, 0x9d, 0xb8, 0xa3, 0x38, 0xf5, 0xac, 0xa1, 0xea, 0x92, 0xd8, 0xc0, 0xb1,
+	0x65, 0x0c, 0x08, 0x00, 0x00, 0xff, 0xff, 0x72, 0x8d, 0x0f, 0x95, 0x86, 0x02, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -150,6 +151,8 @@ const _ = grpc.SupportPackageIsVersion4
 type VehicleReplacementClient interface {
 	CreateMtVehicle(ctx context.Context, in *VehicleReplacementRequest, opts ...grpc.CallOption) (*VehicleReplacementOutput, error)
 	UpdateMtVehicle(ctx context.Context, in *VehicleReplacementRequest, opts ...grpc.CallOption) (*VehicleReplacementOutput, error)
+	CreateVehicleGroup(ctx context.Context, in *VehicleReplacementRequest, opts ...grpc.CallOption) (*VehicleReplacementOutput, error)
+	UpdateVehicleGroup(ctx context.Context, in *VehicleReplacementRequest, opts ...grpc.CallOption) (*VehicleReplacementOutput, error)
 }
 
 type vehicleReplacementClient struct {
@@ -178,10 +181,30 @@ func (c *vehicleReplacementClient) UpdateMtVehicle(ctx context.Context, in *Vehi
 	return out, nil
 }
 
+func (c *vehicleReplacementClient) CreateVehicleGroup(ctx context.Context, in *VehicleReplacementRequest, opts ...grpc.CallOption) (*VehicleReplacementOutput, error) {
+	out := new(VehicleReplacementOutput)
+	err := c.cc.Invoke(ctx, "/packets.VehicleReplacement/CreateVehicleGroup", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *vehicleReplacementClient) UpdateVehicleGroup(ctx context.Context, in *VehicleReplacementRequest, opts ...grpc.CallOption) (*VehicleReplacementOutput, error) {
+	out := new(VehicleReplacementOutput)
+	err := c.cc.Invoke(ctx, "/packets.VehicleReplacement/UpdateVehicleGroup", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // VehicleReplacementServer is the server API for VehicleReplacement service.
 type VehicleReplacementServer interface {
 	CreateMtVehicle(context.Context, *VehicleReplacementRequest) (*VehicleReplacementOutput, error)
 	UpdateMtVehicle(context.Context, *VehicleReplacementRequest) (*VehicleReplacementOutput, error)
+	CreateVehicleGroup(context.Context, *VehicleReplacementRequest) (*VehicleReplacementOutput, error)
+	UpdateVehicleGroup(context.Context, *VehicleReplacementRequest) (*VehicleReplacementOutput, error)
 }
 
 // UnimplementedVehicleReplacementServer can be embedded to have forward compatible implementations.
@@ -193,6 +216,12 @@ func (*UnimplementedVehicleReplacementServer) CreateMtVehicle(ctx context.Contex
 }
 func (*UnimplementedVehicleReplacementServer) UpdateMtVehicle(ctx context.Context, req *VehicleReplacementRequest) (*VehicleReplacementOutput, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateMtVehicle not implemented")
+}
+func (*UnimplementedVehicleReplacementServer) CreateVehicleGroup(ctx context.Context, req *VehicleReplacementRequest) (*VehicleReplacementOutput, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateVehicleGroup not implemented")
+}
+func (*UnimplementedVehicleReplacementServer) UpdateVehicleGroup(ctx context.Context, req *VehicleReplacementRequest) (*VehicleReplacementOutput, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateVehicleGroup not implemented")
 }
 
 func RegisterVehicleReplacementServer(s *grpc.Server, srv VehicleReplacementServer) {
@@ -235,6 +264,42 @@ func _VehicleReplacement_UpdateMtVehicle_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _VehicleReplacement_CreateVehicleGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VehicleReplacementRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VehicleReplacementServer).CreateVehicleGroup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/packets.VehicleReplacement/CreateVehicleGroup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VehicleReplacementServer).CreateVehicleGroup(ctx, req.(*VehicleReplacementRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _VehicleReplacement_UpdateVehicleGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VehicleReplacementRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VehicleReplacementServer).UpdateVehicleGroup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/packets.VehicleReplacement/UpdateVehicleGroup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VehicleReplacementServer).UpdateVehicleGroup(ctx, req.(*VehicleReplacementRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _VehicleReplacement_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "packets.VehicleReplacement",
 	HandlerType: (*VehicleReplacementServer)(nil),
@@ -246,6 +311,14 @@ var _VehicleReplacement_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateMtVehicle",
 			Handler:    _VehicleReplacement_UpdateMtVehicle_Handler,
+		},
+		{
+			MethodName: "CreateVehicleGroup",
+			Handler:    _VehicleReplacement_CreateVehicleGroup_Handler,
+		},
+		{
+			MethodName: "UpdateVehicleGroup",
+			Handler:    _VehicleReplacement_UpdateVehicleGroup_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -18,4 +18,6 @@ message VehicleReplacementOutput {
 service VehicleReplacement {
     rpc CreateMtVehicle(VehicleReplacementRequest) returns(VehicleReplacementOutput){}
     rpc UpdateMtVehicle(VehicleReplacementRequest) returns(VehicleReplacementOutput){}
+    rpc CreateVehicleGroup(VehicleReplacementRequest) returns(VehicleReplacementOutput){}
+    rpc UpdateVehicleGroup(VehicleReplacementRequest) returns(VehicleReplacementOutput){}
 }
