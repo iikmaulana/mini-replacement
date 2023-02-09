@@ -151,7 +151,8 @@ func (c customerUsecase) UpdateMtMemberUsecase(form []byte) (result string, serr
 				*tmpOrganization.Telp,
 				*tmpOrganization.Code,
 				*tmpOrganization.BusinessType,
-				memberId,
+				helper.StringToInt(memberId, 0),
+				*tmpOrganization.Email,
 			)
 
 			tmpForm, _ := json.Marshal(val)
@@ -252,7 +253,7 @@ func (c customerUsecase) CreateAuthRunnerUsecase(form []byte) (result string, se
 					*tmpUser.ProfileName,
 					*tmpUser.ProfileEmail,
 					tmpRole,
-					*memberId,
+					helper.StringToInt(*memberId, 0),
 					*dealerId,
 					*tmpUser.ProfilePhone,
 				)
@@ -330,7 +331,7 @@ func (c customerUsecase) UpdateAuthRunnerUsecase(form []byte) (result string, se
 					*tmpUser.ProfileName,
 					*tmpUser.ProfileEmail,
 					tmpRole,
-					*memberId,
+					helper.StringToInt(*memberId, 0),
 					*dealerId,
 					*tmpUser.ProfilePhone,
 					*tmpUser.Username,

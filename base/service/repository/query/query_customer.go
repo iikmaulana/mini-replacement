@@ -23,7 +23,7 @@ const (
 							member_code = '%s',
 							company_type = '%s' 
 						WHERE
-					  		member_id = '%s'
+					  		member_id = %d and email = '%s'
 						`
 
 	CreateAuthRunner = `INSERT INTO runner_app.auth_runner (
@@ -36,7 +36,7 @@ const (
 							dealer_id,
 							phone,
 							creation_date
-							) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s',now())
+							) VALUES ('%s','%s','%s','%s','%s',%d,'%s','%s',now())
 						`
 
 	UpdateAuthRunner = `UPDATE runner_app.auth_runner
@@ -45,7 +45,7 @@ const (
 							user_fullname = '%s',
 							email = '%s',
 							role_id = '%s',
-							member_id = '%s',
+							member_id = %d,
 							dealer_id = '%s',
 							phone = '%s'
 						WHERE
