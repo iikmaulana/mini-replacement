@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	lib "github.com/iikmaulana/mini-replacement/base/libs"
+	"github.com/iikmaulana/mini-replacement/base/models"
 	"github.com/iikmaulana/mini-replacement/base/service"
 	"github.com/iikmaulana/mini-replacement/base/service/repository/query"
 	"github.com/jmoiron/sqlx"
@@ -110,13 +111,18 @@ func (c customerUsecase) UpdateMtMemberUsecase(form []byte) (result string, serr
 	val := map[string]interface{}{}
 	_ = json.Unmarshal(form, &val)
 
-	tmpUser, _ := c.userRepo.GetUserByUsernameRepo(val["super_username"].(string))
+	var tmpUser models.UserResult
+	_, ok := val["super_username"].(string)
+	if ok {
+		tmpUser, _ = c.userRepo.GetUserByUsernameRepo(val["super_username"].(string))
+	}
 
 	if tmpUser.ID == "" {
 		tmpUser, _ = c.userRepo.GetUserByIDRepo(val["id"].(string))
 	}
 
 	if tmpUser.OrganizationId == nil {
+		fmt.Println("username or id not found")
 		return "", nil
 	}
 
