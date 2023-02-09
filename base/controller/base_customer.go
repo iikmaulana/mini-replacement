@@ -69,9 +69,7 @@ func (c customerUsecase) CreateMtMemberUsecase(form []byte) (result string, serr
 		tmpMemberId := lib.RandomCharacter(18)
 		if tmpUser.RealmId != nil {
 			if *tmpUser.RealmId == lib.RealmIdCustomer {
-				if err := c.DB.QueryRow(query.CreateMemberTmp, tmpOrganization.ID, tmpMemberId, nil); err != nil {
-					fmt.Println(err.Err().Error())
-				}
+				c.DB.QueryRow(query.CreateMemberTmp, tmpOrganization.ID, tmpMemberId, nil)
 			}
 		}
 
