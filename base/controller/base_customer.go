@@ -111,12 +111,13 @@ func (c customerUsecase) UpdateMtMemberUsecase(form []byte) (result string, serr
 	_ = json.Unmarshal(form, &val)
 
 	tmpUser, _ := c.userRepo.GetUserByUsernameRepo(val["super_username"].(string))
-	if tmpUser.OrganizationId == nil {
-		return "", nil
-	}
 
 	if tmpUser.ID == "" {
 		tmpUser, _ = c.userRepo.GetUserByIDRepo(val["id"].(string))
+	}
+
+	if tmpUser.OrganizationId == nil {
+		return "", nil
 	}
 
 	tmpOrganization, _ := c.organizationRepo.GetOrganizationByIdRepo(*tmpUser.OrganizationId)
