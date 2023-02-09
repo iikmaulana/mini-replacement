@@ -269,6 +269,8 @@ func (c customerUsecase) CreateAuthRunnerUsecase(form []byte) (result string, se
 
 				tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
 				_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+
+				_, _ = c.PrivacyPolicyUsecase(form)
 			}
 		}
 	}
@@ -408,6 +410,41 @@ func (c customerUsecase) ChangePasswordUsecase(form []byte) (result string, serr
 
 	tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
 	_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+
+	return "", nil
+}
+
+func (c customerUsecase) PrivacyPolicyUsecase(form []byte) (result string, serr serror.SError) {
+	val := map[string]interface{}{}
+	_ = json.Unmarshal(form, &val)
+
+	var tmpUserId string
+	if err := c.DB.QueryRow(fmt.Sprintf(query.GetUserIdByUsername, val["super_username"].(string))).Scan(&tmpUserId); err != nil {
+		fmt.Println(err.Error())
+	}
+
+	if err := c.DB.QueryRow(fmt.Sprintf(query.CheckPrivacyPolicy, tmpUserId)).Scan(&tmpUserId); err != nil {
+		fmt.Println(err.Error())
+	} else {
+		tmpIdPrivacyPolicy := lib.RandomCharacter(18)
+		tmpQuery := fmt.Sprintf(query.CreatePrivacyPolicy,
+			tmpIdPrivacyPolicy,
+			tmpUserId,
+		)
+
+		tmpForm, _ := json.Marshal(form)
+		tmpOauthRunner := lib.PayloadNsq{
+			RequestID:    uuid.New().String(),
+			Time:         uttime.Now().String(),
+			Service:      "UM",
+			DatabaseName: "dev_runner_app",
+			Payload:      string(tmpForm),
+			Query:        tmpQuery,
+		}
+
+		tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
+		_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+	}
 
 	return "", nil
 }

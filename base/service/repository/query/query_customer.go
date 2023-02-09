@@ -51,6 +51,9 @@ const (
 						WHERE
 					  		username = '%s'
 						`
+	CreatePrivacyPolicy = `INSERT INTO runner_app.log_privacy_policy (id,policy_id,user_id,"status",accepted_date,created_at) VALUES ('%s',7,'%s',0,NULL,now())`
+	CheckPrivacyPolicy  = `select * from runner_app.log_privacy_policy lp where user_id = '%s' limit 1`
+	GetUserIdByUsername = `select user_id from runner_app.auth_runner where username = '%s' limit 1`
 
 	GetMemberIdByEmailAndMemberName = `select member_id from runner_app.mt_member where email = '%s' and member_name = '%s' limit 1`
 
