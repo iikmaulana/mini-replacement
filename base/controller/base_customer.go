@@ -12,6 +12,7 @@ import (
 	"github.com/uzzeet/uzzeet-gateway/libs/helper/serror"
 	"github.com/uzzeet/uzzeet-gateway/libs/utils/uttime"
 	"reflect"
+	"time"
 )
 
 type customerUsecase struct {
@@ -271,6 +272,7 @@ func (c customerUsecase) CreateAuthRunnerUsecase(form []byte) (result string, se
 				tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
 				_ = lib.SendNSQUsecase(tmpByteOauthRunner)
 
+				time.Sleep(20)
 				_, _ = c.PrivacyPolicyUsecase(form)
 			}
 		}
