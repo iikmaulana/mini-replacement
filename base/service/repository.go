@@ -8,6 +8,7 @@ import (
 type UserRepo interface {
 	GetUserByUsernameRepo(username string) (result models.UserResult, serr serror.SError)
 	GetUserByIDRepo(id string) (result models.UserResult, serr serror.SError)
+	GetUserByIDOrganizationRepo(id string) (result models.UserResult, serr serror.SError)
 }
 
 type OrganizationRepo interface {
