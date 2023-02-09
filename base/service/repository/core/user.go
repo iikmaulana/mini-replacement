@@ -63,3 +63,24 @@ func (r userRepository) GetUserByUsernameRepo(username string) (result models.Us
 
 	return result, nil
 }
+
+func (r userRepository) GetUserByIDRepo(id string) (result models.UserResult, serr serror.SError) {
+	output, err := r.client.GetUserByIdUsecase(context.Background(), &packets.UserRequestByID{
+		UserID: id,
+	})
+
+	if err != nil {
+		serrFmt := fmt.Sprintf("[service][repository][core][user] while grpc GetUserByUsernameRepo: %+v", err)
+		logger.Err(serrFmt)
+		return result, serror.NewFromErrorc(err, serrFmt)
+	}
+
+	if output.GetStatus() == 1 {
+		err := json.Unmarshal(output.GetData().Value, &result)
+		if err != nil {
+			return result, serror.NewFromError(err)
+		}
+	}
+
+	return result, nil
+}

@@ -115,6 +115,10 @@ func (c customerUsecase) UpdateMtMemberUsecase(form []byte) (result string, serr
 		return "", nil
 	}
 
+	if tmpUser.ID == "" {
+		tmpUser, _ = c.userRepo.GetUserByIDRepo(val["id"].(string))
+	}
+
 	tmpOrganization, _ := c.organizationRepo.GetOrganizationByIdRepo(*tmpUser.OrganizationId)
 
 	var memberId string
