@@ -8,6 +8,7 @@ import (
 	"github.com/iikmaulana/mini-replacement/base/service"
 	"github.com/iikmaulana/mini-replacement/base/service/repository/query"
 	"github.com/jmoiron/sqlx"
+	"github.com/uzzeet/uzzeet-gateway/libs/helper"
 	"github.com/uzzeet/uzzeet-gateway/libs/helper/serror"
 	"github.com/uzzeet/uzzeet-gateway/libs/utils/uttime"
 	"reflect"
@@ -65,7 +66,20 @@ func (c customerUsecase) CreateMtMemberUsecase(form []byte) (result string, serr
 			tmpOrganization.BusinessType = &tmpDefaultValue
 		}
 
+		tmpUUID := uuid.New().String()
+		tmpMemberId := lib.RandomCharacter(18)
+		if tmpUser.RealmId != nil {
+			if *tmpUser.RealmId == lib.RealmIdDealer {
+			} else if *tmpUser.RealmId == lib.RealmIdCustomer {
+				c.DB.QueryRow(query.CreateMemberTmp, tmpUUID, tmpMemberId, nil)
+			}
+		}
+
+		fmt.Println(tmpUUID)
+		fmt.Println(tmpMemberId)
+
 		tmpQuery := fmt.Sprintf(query.CreateMtMember,
+			helper.StringToInt(tmpMemberId, 0),
 			*tmpOrganization.Name,
 			*tmpOrganization.ContactName,
 			*tmpOrganization.Email,
@@ -87,6 +101,8 @@ func (c customerUsecase) CreateMtMemberUsecase(form []byte) (result string, serr
 
 		tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
 		_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+
+		_, _ = c.CreateAuthRunnerUsecase(form)
 	}
 
 	return "", nil
@@ -152,6 +168,8 @@ func (c customerUsecase) UpdateMtMemberUsecase(form []byte) (result string, serr
 
 			tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
 			_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+
+			_, _ = c.UpdateAuthRunnerUsecase(form)
 		}
 	}
 
@@ -179,6 +197,12 @@ func (c customerUsecase) CreateAuthRunnerUsecase(form []byte) (result string, se
 	var memberId *string
 	if err := c.DB.QueryRow(fmt.Sprintf(query.GetMemberIdByOrganizationId, *tmpUser.OrganizationId)).Scan(&memberId); err != nil {
 		fmt.Println(err.Error())
+	}
+
+	if memberId == nil {
+		if err := c.DB.QueryRow(fmt.Sprintf(query.GetMemberIdByEmailAndMemberName, *tmpUser.OrganizationEmail, *tmpUser.OrganizationName)).Scan(&memberId); err != nil {
+			fmt.Println(err.Error())
+		}
 	}
 
 	var tmpRole string
@@ -225,7 +249,6 @@ func (c customerUsecase) CreateAuthRunnerUsecase(form []byte) (result string, se
 					dealerId = &tmpDefaultValue
 				}
 				tmpQuery := fmt.Sprintf(query.CreateAuthRunner,
-					"id",
 					*tmpUser.Username,
 					*tmpUser.Password,
 					*tmpUser.ProfileName,

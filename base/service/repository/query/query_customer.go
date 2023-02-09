@@ -1,7 +1,8 @@
 package query
 
 const (
-	CreateMtMember = `INSERT INTO public.mt_member (
+	CreateMtMember = `INSERT INTO runner_app.mt_member (
+							member_id,
 							member_name,
 							company,
 							email,
@@ -11,10 +12,10 @@ const (
 							company_type,
 							date_registration,
 							status_engage
-							) VALUES ('%s','%s','%s,'%s','%d','%s','%s',now(),'not_active')
+							) VALUES (%d,'%s','%s','%s','%s','%s','%s','%s',now(),'not_active')
 						`
 
-	UpdateMtMember = `UPDATE public.mt_member 
+	UpdateMtMember = `UPDATE runner_app.mt_member 
 							SET member_name = '%s',
 							company = '%s',
 							email = '%s',
@@ -25,8 +26,7 @@ const (
 					  		member_id = '%s'
 						`
 
-	CreateAuthRunner = `INSERT INTO public.auth_runner (
-							user_id,
+	CreateAuthRunner = `INSERT INTO runner_app.auth_runner (
 							username,
 							password,
 							user_fullname,
@@ -36,10 +36,10 @@ const (
 							dealer_id,
 							phone,
 							creation_date
-							) VALUES ('%s','%s','%s,'%s','%s','%s','%s','%s','%s',now())
+							) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s',now())
 						`
 
-	UpdateAuthRunner = `UPDATE public.auth_runner (
+	UpdateAuthRunner = `UPDATE runner_app.auth_runner (
 							SET username = '%s',
 							password = '%s',
 							user_fullname = '%s',
@@ -51,6 +51,9 @@ const (
 						WHERE
 					  		username = '%s'
 						`
+
+	GetMemberIdByEmailAndMemberName = `select member_id from runner_app.mt_member where email = '%s' and member_name = '%s' limit 1`
+
 	UpdateAuthRunnerActivationCustomer = `UPDATE public.auth_runner (
 												SET username = '%s',
 												password = '%s',
@@ -72,4 +75,6 @@ const (
 					WHERE
 						username = '%s'
 					`
+
+	CreateMemberTmp = `insert into um_runner.member_tmp (organization_id,member_id,dealer_id) values ($1,$2,$3)`
 )
