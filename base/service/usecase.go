@@ -18,4 +18,6 @@ type CustomerUsecase interface {
 type VehicleUsecase interface {
 	CreateMtVehicle(form []byte) (result string, serr serror.SError)
 	UpdateMtVehicle(form []byte) (result string, serr serror.SError)
+	CreateVehicleGroup(form []byte) (result string, serr serror.SError)
+	UpdateVehicleGroup(form []byte) (result string, serr serror.SError)
 }
