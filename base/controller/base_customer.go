@@ -66,16 +66,16 @@ func (c customerUsecase) CreateMtMemberUsecase(form []byte) (result string, serr
 			tmpOrganization.BusinessType = &tmpDefaultValue
 		}
 
-		tmpUUID := uuid.New().String()
 		tmpMemberId := lib.RandomCharacter(18)
 		if tmpUser.RealmId != nil {
-			if *tmpUser.RealmId == lib.RealmIdDealer {
-			} else if *tmpUser.RealmId == lib.RealmIdCustomer {
-				c.DB.QueryRow(query.CreateMemberTmp, tmpUUID, tmpMemberId, nil)
+			if *tmpUser.RealmId == lib.RealmIdCustomer {
+				if err := c.DB.QueryRow(query.CreateMemberTmp, tmpOrganization.ID, tmpMemberId, nil); err != nil {
+					fmt.Println(err.Err().Error())
+				}
 			}
 		}
 
-		fmt.Println(tmpUUID)
+		fmt.Println(tmpOrganization.ID)
 		fmt.Println(tmpMemberId)
 
 		tmpQuery := fmt.Sprintf(query.CreateMtMember,
