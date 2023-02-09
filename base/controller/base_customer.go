@@ -12,7 +12,6 @@ import (
 	"github.com/uzzeet/uzzeet-gateway/libs/helper/serror"
 	"github.com/uzzeet/uzzeet-gateway/libs/utils/uttime"
 	"reflect"
-	"time"
 )
 
 type customerUsecase struct {
@@ -248,7 +247,9 @@ func (c customerUsecase) CreateAuthRunnerUsecase(form []byte) (result string, se
 				if dealerId == nil {
 					dealerId = &tmpDefaultValue
 				}
+				tmpUserId := lib.RandomCharacter(18)
 				tmpQuery := fmt.Sprintf(query.CreateAuthRunner,
+					helper.StringToInt(tmpUserId, 0),
 					*tmpUser.Username,
 					*tmpUser.Password,
 					*tmpUser.ProfileName,
@@ -272,8 +273,7 @@ func (c customerUsecase) CreateAuthRunnerUsecase(form []byte) (result string, se
 				tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
 				_ = lib.SendNSQUsecase(tmpByteOauthRunner)
 
-				time.Sleep(20)
-				_, _ = c.PrivacyPolicyUsecase(form)
+				_, _ = c.PrivacyPolicyUsecase(form, tmpUserId)
 			}
 		}
 	}
@@ -417,41 +417,34 @@ func (c customerUsecase) ChangePasswordUsecase(form []byte) (result string, serr
 	return "", nil
 }
 
-func (c customerUsecase) PrivacyPolicyUsecase(form []byte) (result string, serr serror.SError) {
+func (c customerUsecase) PrivacyPolicyUsecase(form []byte, tmpUserId string) (result string, serr serror.SError) {
 	val := map[string]interface{}{}
 	_ = json.Unmarshal(form, &val)
 
-	var tmpUserId string
-	if err := c.DB.QueryRow(fmt.Sprintf(query.GetUserIdByUsername, val["super_username"].(string))).Scan(&tmpUserId); err != nil {
+	var tmpPrivacyPolicy bool
+	if err := c.DB.QueryRow(fmt.Sprintf(query.CheckPrivacyPolicy, tmpUserId)).Scan(&tmpPrivacyPolicy); err != nil {
 		fmt.Println(err.Error())
 	}
 
-	if tmpUserId != "" {
-		var tmpPrivacyPolicy bool
-		if err := c.DB.QueryRow(fmt.Sprintf(query.CheckPrivacyPolicy, tmpUserId)).Scan(&tmpPrivacyPolicy); err != nil {
-			fmt.Println(err.Error())
+	if !tmpPrivacyPolicy {
+		tmpIdPrivacyPolicy := lib.RandomCharacter(18)
+		tmpQuery := fmt.Sprintf(query.CreatePrivacyPolicy,
+			tmpIdPrivacyPolicy,
+			tmpUserId,
+		)
+
+		tmpForm, _ := json.Marshal(form)
+		tmpOauthRunner := lib.PayloadNsq{
+			RequestID:    uuid.New().String(),
+			Time:         uttime.Now().String(),
+			Service:      "UM",
+			DatabaseName: "dev_runner_app",
+			Payload:      string(tmpForm),
+			Query:        tmpQuery,
 		}
 
-		if !tmpPrivacyPolicy {
-			tmpIdPrivacyPolicy := lib.RandomCharacter(18)
-			tmpQuery := fmt.Sprintf(query.CreatePrivacyPolicy,
-				tmpIdPrivacyPolicy,
-				tmpUserId,
-			)
-
-			tmpForm, _ := json.Marshal(form)
-			tmpOauthRunner := lib.PayloadNsq{
-				RequestID:    uuid.New().String(),
-				Time:         uttime.Now().String(),
-				Service:      "UM",
-				DatabaseName: "dev_runner_app",
-				Payload:      string(tmpForm),
-				Query:        tmpQuery,
-			}
-
-			tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-			_ = lib.SendNSQUsecase(tmpByteOauthRunner)
-		}
+		tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
+		_ = lib.SendNSQUsecase(tmpByteOauthRunner)
 	}
 
 	return "", nil

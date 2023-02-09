@@ -27,6 +27,7 @@ const (
 						`
 
 	CreateAuthRunner = `INSERT INTO runner_app.auth_runner (
+							user_id,
 							username,
 							password,
 							user_fullname,
@@ -36,7 +37,7 @@ const (
 							dealer_id,
 							phone,
 							creation_date
-							) VALUES ('%s','%s','%s','%s','%s',%d,'%s','%s',now())
+							) VALUES (%d,'%s','%s','%s','%s','%s',%d,'%s','%s',now())
 						`
 
 	UpdateAuthRunner = `UPDATE runner_app.auth_runner
