@@ -153,11 +153,14 @@ func (c customerUsecase) UpdateMtMemberUsecase(form []byte) (result string, serr
 		if tmpOrganization.BusinessType == nil {
 			tmpOrganization.BusinessType = &tmpDefaultValue
 		}
+		if tmpOrganization.OrgContactPerson == nil {
+			tmpOrganization.OrgContactPerson = &tmpDefaultValue
+		}
 
 		if memberId != "" {
 			tmpQuery := fmt.Sprintf(query.UpdateMtMember,
 				*tmpOrganization.Name,
-				*tmpOrganization.Name,
+				*tmpOrganization.OrgContactPerson,
 				*tmpOrganization.Email,
 				*tmpOrganization.Telp,
 				*tmpOrganization.Code,
