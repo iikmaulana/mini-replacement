@@ -70,7 +70,7 @@ const (
 				left join um_runner.member_tmp md on md.organization_id = vvd.dealer_id
 				where vh.chassis_number = '%s'
 				and vh.activation_status in (1,2)
-				order by vh.created_at asc`
+				order by vh.created_at desc limit 1`
 
 	CreateMtVehicleV2 = `INSERT INTO runner_app.mt_vehicle (
 							vehicle_id,

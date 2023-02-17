@@ -337,6 +337,12 @@ func (v vehicleUsecase) UpdateMtVehicle(form []byte) (result string, serr serror
 			for _, vv := range tmpVehicleHistoryArray {
 				if vv.ChassisNumber != "" {
 					tmpDefaultValue := "NULL"
+					if vv.ChassisNumber == "" {
+						vv.ChassisNumber = tmpDefaultValue
+					} else {
+						tmpStr := fmt.Sprintf("'%s'", vv.ChassisNumber)
+						vv.ChassisNumber = tmpStr
+					}
 					if vv.Imei == nil {
 						vv.Imei = &tmpDefaultValue
 					} else {
@@ -420,6 +426,116 @@ func (v vehicleUsecase) UpdateMtVehicle(form []byte) (result string, serr serror
 					tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
 					_ = lib.SendNSQUsecase(tmpByteOauthRunner)
 				}
+			}
+		}
+	} else {
+		tmpQueryVehicle := fmt.Sprintf(query.GetVehicle, val["chassis_number"].(string))
+		rows, err := v.DB.Queryx(tmpQueryVehicle)
+		if err != nil {
+			return result, serror.New(err.Error())
+		}
+
+		var tmpVehicleHistoryArray []models.VehicleV3
+		defer rows.Close()
+		for rows.Next() {
+			tmpVehicleHistory := models.VehicleV3{}
+			if err := rows.StructScan(&tmpVehicleHistory); err != nil {
+				fmt.Println(err.Error())
+			}
+			tmpVehicleHistoryArray = append(tmpVehicleHistoryArray, tmpVehicleHistory)
+		}
+
+		for _, vv := range tmpVehicleHistoryArray {
+			if vv.ChassisNumber != "" {
+				tmpDefaultValue := "NULL"
+				if vv.ChassisNumber == "" {
+					vv.ChassisNumber = tmpDefaultValue
+				} else {
+					tmpStr := fmt.Sprintf("'%s'", vv.ChassisNumber)
+					vv.ChassisNumber = tmpStr
+				}
+				if vv.Imei == nil {
+					vv.Imei = &tmpDefaultValue
+				} else {
+					tmpStr := fmt.Sprintf("'%s'", *vv.Imei)
+					vv.Imei = &tmpStr
+				}
+				if vv.VehicleName == nil {
+					vv.VehicleName = &tmpDefaultValue
+				} else {
+					tmpStr := fmt.Sprintf("'%s'", *vv.VehicleName)
+					vv.VehicleName = &tmpStr
+				}
+				if vv.VehicleNumber == nil {
+					vv.VehicleNumber = &tmpDefaultValue
+				} else {
+					tmpStr := fmt.Sprintf("'%s'", *vv.VehicleNumber)
+					vv.VehicleNumber = &tmpStr
+				}
+				if vv.MemberID == nil {
+					vv.MemberID = &tmpDefaultValue
+				} else {
+					tmpStr := fmt.Sprintf("'%s'", *vv.MemberID)
+					vv.MemberID = &tmpStr
+				}
+				if vv.IsActive == nil {
+					vv.IsActive = &tmpDefaultValue
+				} else {
+					tmpStr := fmt.Sprintf("'%s'", *vv.IsActive)
+					vv.IsActive = &tmpStr
+				}
+				if vv.ActivationDate == nil {
+					vv.ActivationDate = &tmpDefaultValue
+				} else {
+					tmpStr := fmt.Sprintf("'%s'", *vv.ActivationDate)
+					vv.ActivationDate = &tmpStr
+				}
+				if vv.DeviceStatus == nil {
+					vv.DeviceStatus = &tmpDefaultValue
+				} else {
+					tmpStr := fmt.Sprintf("'%s'", *vv.DeviceStatus)
+					vv.DeviceStatus = &tmpStr
+				}
+				if vv.PostDealerID == nil {
+					vv.PostDealerID = &tmpDefaultValue
+				} else {
+					tmpStr := fmt.Sprintf("'%s'", *vv.PostDealerID)
+					vv.PostDealerID = &tmpStr
+				}
+				if vv.ActvDealerID == nil {
+					vv.ActvDealerID = &tmpDefaultValue
+				} else {
+					tmpStr := fmt.Sprintf("'%s'", *vv.ActvDealerID)
+					vv.ActvDealerID = &tmpStr
+				}
+				if vv.GsmNumber == nil {
+					vv.GsmNumber = &tmpDefaultValue
+				} else {
+					tmpStr := fmt.Sprintf("'%s'", *vv.GsmNumber)
+					vv.GsmNumber = &tmpStr
+				}
+				if vv.EngineNumber == nil {
+					vv.EngineNumber = &tmpDefaultValue
+				} else {
+					tmpStr := fmt.Sprintf("'%s'", *vv.EngineNumber)
+					vv.EngineNumber = &tmpStr
+				}
+
+				tmpQuery := fmt.Sprintf(query.UpdateMtVehcileV2, vv.ChassisNumber, *vv.Imei, *vv.VehicleName, *vv.VehicleNumber, *vv.MemberID,
+					*vv.IsActive, *vv.ActivationDate, *vv.DeviceStatus, *vv.PostDealerID, *vv.ActvDealerID, *vv.GsmNumber, *vv.EngineNumber,
+					vv.ChassisNumber, *vv.MemberID)
+
+				tmpForm, _ := json.Marshal(val)
+				tmpOauthRunner := lib.PayloadNsq{
+					RequestID:    uuid.New().String(),
+					Time:         uttime.Now().String(),
+					Service:      "vehicle",
+					DatabaseName: "dev_runner_app",
+					Payload:      string(tmpForm),
+					Query:        tmpQuery,
+				}
+				tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
+				_ = lib.SendNSQUsecase(tmpByteOauthRunner)
 			}
 		}
 	}
