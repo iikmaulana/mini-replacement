@@ -77,6 +77,13 @@ func (v vehicleUsecase) CreateMtVehicle(form []byte) (result string, serr serror
 							tmpVehicleId := lib.RandomCharacter(14)
 							tmpDefaultValue := "NULL"
 
+							if vv.ChassisNumber == "" {
+								vv.ChassisNumber = tmpDefaultValue
+							} else {
+								tmpStr := fmt.Sprintf("'%s'", vv.ChassisNumber)
+								vv.ChassisNumber = tmpStr
+							}
+
 							if vv.Imei == nil {
 								vv.Imei = &tmpDefaultValue
 							} else {
@@ -206,6 +213,13 @@ func (v vehicleUsecase) CreateMtVehicle(form []byte) (result string, serr serror
 					if !tmpMtVehicle {
 						tmpVehicleId := lib.RandomCharacter(14)
 						tmpDefaultValue := "NULL"
+
+						if vv.ChassisNumber == "" {
+							vv.ChassisNumber = tmpDefaultValue
+						} else {
+							tmpStr := fmt.Sprintf("'%s'", vv.ChassisNumber)
+							vv.ChassisNumber = tmpStr
+						}
 
 						if vv.Imei == nil {
 							vv.Imei = &tmpDefaultValue
