@@ -38,7 +38,9 @@ func (v vehicleUsecase) CreateMtVehicle(form []byte) (result string, serr serror
 
 	if tmpMtVehicle {
 		_, _ = v.UpdateMtVehicle(form)
+		fmt.Println("============= create update =============")
 	} else {
+		fmt.Println("============= create vehicle =============")
 		tmpQueryVehicle := fmt.Sprintf(query.GetVehicle, val["chassis_number"].(string))
 		rows, err := v.DB.Queryx(tmpQueryVehicle)
 		if err != nil {
@@ -53,6 +55,10 @@ func (v vehicleUsecase) CreateMtVehicle(form []byte) (result string, serr serror
 				fmt.Println(err.Error())
 			}
 			tmpVehicleHistoryArray = append(tmpVehicleHistoryArray, tmpVehicleHistory)
+		}
+
+		if len(tmpVehicleHistoryArray) == 0 {
+			fmt.Println("============= create vehicle gagal =============")
 		}
 
 		for _, vv := range tmpVehicleHistoryArray {
