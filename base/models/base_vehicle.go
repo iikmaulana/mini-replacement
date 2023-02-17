@@ -55,3 +55,19 @@ type VehResult struct {
 	CreatedAt           string  `json:"created_at" db:"created_at"`
 	UpdatedAt           *string `json:"updated_at" db:"updated_at"`
 }
+
+type VehicleV3 struct {
+	ChassisNumber  string  `json:"chassis_number" db:"chassis_number"`
+	Imei           *string `json:"imei" db:"imei"`
+	VehicleName    *string `json:"vehicle_name" db:"vehicle_name"`
+	VehicleNumber  *string `json:"vehicle_number" db:"vehicle_number"`
+	MemberID       *string `json:"member_id" db:"member_id"`
+	IsActive       *string `json:"is_active" db:"is_active"`
+	ActivationDate *string `json:"activation_date" db:"activation_date"`
+	DeviceStatus   *string `json:"device_status" db:"device_status"`
+	PostDealerID   *string `json:"post_dealer_id" db:"post_dealer_id"`
+	ActvDealerID   *string `json:"actv_dealer_id" db:"actv_dealer_id"`
+	GsmNumber      *string `json:"gsm_number" db:"gsm_number"`
+	EngineNumber   *string `json:"engine_number" db:"engine_number"`
+	CreatedAt      *string `json:"created_at" db:"created_at"`
+}
