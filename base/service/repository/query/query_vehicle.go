@@ -68,7 +68,7 @@ const (
 				left join db_vehicle.veh_vehicle_dealer vvd on vh.chassis_number = vvd.chassis_number
 				left join um_runner.member_tmp mm on mm.organization_id = vh.owner_id
 				left join um_runner.member_tmp md on md.organization_id = vvd.dealer_id
-				where vh.chassis_number in = '%s'
+				where vh.chassis_number = '%s'
 				and vh.activation_status in (1,2)
 				order by vh.created_at asc`
 

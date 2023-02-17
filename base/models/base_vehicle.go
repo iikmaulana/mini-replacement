@@ -71,3 +71,22 @@ type VehicleV3 struct {
 	EngineNumber   *string `json:"engine_number" db:"engine_number"`
 	CreatedAt      *string `json:"created_at" db:"created_at"`
 }
+
+type VehicleReq struct {
+	DealerID             string `json:"dealer_id"`
+	RealmID              string `json:"realm_id"`
+	OwnerID              string `json:"owner_id"`
+	DeviceStatus         string `json:"device_status"`
+	ChassisNumber        string `json:"chassis_number"`
+	Imei                 string `json:"imei"`
+	GsmNumber            string `json:"gsm_number"`
+	VehicleName          string `json:"vehicle_name"`
+	VehicleTypeID        string `json:"vehicle_type_id"`
+	BusinessSectorID     string `json:"business_sector_id"`
+	Area                 string `json:"area"`
+	Odometer             string `json:"odometer"`
+	RearBodyTypeID       string `json:"rear_body_type_id"`
+	LeasingID            string `json:"leasing_id"`
+	ProspectingLeasingID string `json:"prospecting_leasing_id"`
+	PaymentMethod        string `json:"payment_method"`
+}
