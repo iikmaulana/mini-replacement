@@ -193,9 +193,35 @@ func (c customerUsecase) CreateAuthRunnerUsecase(form []byte) (result string, se
 	val := map[string]interface{}{}
 	_ = json.Unmarshal(form, &val)
 
-	tmpUser, _ := c.userRepo.GetUserByUsernameRepo(val["super_username"].(string))
-	if tmpUser.OrganizationId == nil {
-		return "", nil
+	var tmpUser models.UserResult
+	_, ok := val["username"].(string)
+	if ok {
+		rows, err := c.DB.Queryx(query.GetUserByUsername, val["username"].(string))
+		if err != nil {
+			return result, serror.New(err.Error())
+		}
+
+		defer rows.Close()
+		for rows.Next() {
+			if err := rows.StructScan(&tmpUser); err != nil {
+				return result, serror.New("Failed scan for struct models")
+			}
+		}
+	} else {
+		_, ok = val["super_username"].(string)
+		if ok {
+			rows, err := c.DB.Queryx(query.GetUserByUsername, val["super_username"].(string))
+			if err != nil {
+				return result, serror.New(err.Error())
+			}
+
+			defer rows.Close()
+			for rows.Next() {
+				if err := rows.StructScan(&tmpUser); err != nil {
+					return result, serror.New("Failed scan for struct models")
+				}
+			}
+		}
 	}
 
 	tmpOrganization, _ := c.organizationRepo.GetOrganizationByIdRepo(*tmpUser.OrganizationId)
@@ -298,12 +324,14 @@ func (c customerUsecase) UpdateAuthRunnerUsecase(form []byte) (result string, se
 	val := map[string]interface{}{}
 	_ = json.Unmarshal(form, &val)
 
-	tmpUser, _ := c.userRepo.GetUserByUsernameRepo(val["super_username"].(string))
-	if tmpUser.OrganizationId == nil {
+	var tmpOrganization models.RpcListOrganizationCustomerResult
+	_, ok := val["organization_id"].(string)
+	if ok {
+		tmpOrganization, _ = c.organizationRepo.GetOrganizationByIdRepo(val["organization_id"].(string))
+	}
+	if tmpOrganization.ID == "" {
 		return "", nil
 	}
-
-	tmpOrganization, _ := c.organizationRepo.GetOrganizationByIdRepo(*tmpUser.OrganizationId)
 
 	var dealerId *string
 	if tmpOrganization.ParentID != nil {
@@ -313,8 +341,48 @@ func (c customerUsecase) UpdateAuthRunnerUsecase(form []byte) (result string, se
 	}
 
 	var memberId *string
-	if err := c.DB.QueryRow(fmt.Sprintf(query.GetMemberIdByOrganizationId, *tmpUser.OrganizationId)).Scan(&memberId); err != nil {
+	if err := c.DB.QueryRow(fmt.Sprintf(query.GetMemberIdByOrganizationId, tmpOrganization.ID)).Scan(&memberId); err != nil {
 		fmt.Println(err.Error())
+	}
+
+	var tmpUser models.UserResult
+	_, ok = val["username"].(string)
+	if ok {
+		rows, err := c.DB.Queryx(query.GetUserByUsername, val["username"].(string))
+		if err != nil {
+			return result, serror.New(err.Error())
+		}
+
+		defer rows.Close()
+		for rows.Next() {
+			if err := rows.StructScan(&tmpUser); err != nil {
+				return result, serror.New("Failed scan for struct models")
+			}
+		}
+	} else {
+		_, ok = val["super_username"].(string)
+		if ok {
+			rows, err := c.DB.Queryx(query.GetUserByUsername, val["super_username"].(string))
+			if err != nil {
+				return result, serror.New(err.Error())
+			}
+
+			defer rows.Close()
+			for rows.Next() {
+				if err := rows.StructScan(&tmpUser); err != nil {
+					return result, serror.New("Failed scan for struct models")
+				}
+			}
+		}
+	}
+
+	var tmpUserId string
+	if err := c.DB.QueryRow(fmt.Sprintf(query.GetUserIdByUsername, val["username"].(string))).Scan(&tmpUserId); err != nil {
+		fmt.Println(err.Error())
+	}
+
+	if tmpUserId == "" {
+		_, _ = c.CreateAuthRunnerUsecase(form)
 	}
 
 	var tmpRole string
