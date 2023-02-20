@@ -13,6 +13,7 @@ import (
 	"github.com/uzzeet/uzzeet-gateway/libs/helper/serror"
 	"github.com/uzzeet/uzzeet-gateway/libs/utils/uttime"
 	"reflect"
+	"time"
 )
 
 type customerUsecase struct {
@@ -190,6 +191,8 @@ func (c customerUsecase) UpdateMtMemberUsecase(form []byte) (result string, serr
 }
 
 func (c customerUsecase) CreateAuthRunnerUsecase(form []byte) (result string, serr serror.SError) {
+	time.Sleep(time.Second * 10)
+
 	val := map[string]interface{}{}
 	_ = json.Unmarshal(form, &val)
 
@@ -321,6 +324,8 @@ func (c customerUsecase) CreateAuthRunnerUsecase(form []byte) (result string, se
 }
 
 func (c customerUsecase) UpdateAuthRunnerUsecase(form []byte) (result string, serr serror.SError) {
+	time.Sleep(time.Second * 10)
+
 	val := map[string]interface{}{}
 	_ = json.Unmarshal(form, &val)
 
