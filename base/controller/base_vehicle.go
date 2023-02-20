@@ -575,10 +575,15 @@ func (v vehicleUsecase) CreateVehicleGroup(form []byte) (result string, serr ser
 
 	tmpChassisNumber := val["chassis_number"].(string)
 	tmpChassisNumberArray := strings.Split(tmpChassisNumber, ",")
-	for _, v := range tmpChassisNumberArray {
+	for _, vCN := range tmpChassisNumberArray {
+		var tmpVehicleId int
+		if err := v.DB.QueryRow(fmt.Sprintf(query.GetVehicleIdByChassis, vCN)).Scan(&tmpVehicleId); err != nil {
+			fmt.Println(err.Error())
+		}
+
 		tmpQuery = fmt.Sprintf(query.CreateMSVehicleGroup,
 			helper.StringToInt(tmpGroupId, 0),
-			helper.StringToInt(v, 0),
+			tmpVehicleId,
 		)
 
 		tmpForm, _ = json.Marshal(val)
@@ -599,5 +604,75 @@ func (v vehicleUsecase) CreateVehicleGroup(form []byte) (result string, serr ser
 }
 
 func (v vehicleUsecase) UpdateVehicleGroup(form []byte) (result string, serr serror.SError) {
+	val := map[string]interface{}{}
+	_ = json.Unmarshal(form, &val)
+
+	var memberId string
+	if err := v.DB.QueryRow(fmt.Sprintf(query.GetMemberIdByOrganizationId, val["owner_id"].(string))).Scan(&memberId); err != nil {
+		fmt.Println(err.Error())
+	}
+
+	var vehicleGroup string
+	if err := v.DB.QueryRow(fmt.Sprintf(query.SelectVehicleGroup, memberId, val["vehicle_group_name"].(string))).Scan(&vehicleGroup); err != nil {
+		fmt.Println(err.Error())
+	}
+
+	if _, err := v.DB.Queryx(fmt.Sprintf(query.DeleteVehicleGroup, vehicleGroup)); err != nil {
+		fmt.Println(err.Error())
+	}
+
+	if _, err := v.DB.Queryx(fmt.Sprintf(query.DeleteMsVehicleGroup, vehicleGroup)); err != nil {
+		fmt.Println(err.Error())
+	}
+
+	tmpGroupId := lib.RandomCharacter(14)
+	tmpQuery := fmt.Sprintf(query.CreateVehiclGroup,
+		helper.StringToInt(tmpGroupId, 0),
+		val["vehicle_group_name"].(string),
+		val["description"].(string),
+		helper.StringToInt(memberId, 0),
+	)
+
+	tmpForm, _ := json.Marshal(val)
+	tmpOauthRunner := lib.PayloadNsq{
+		RequestID:    uuid.New().String(),
+		Time:         uttime.Now().String(),
+		Service:      "vehicle",
+		DatabaseName: "dev_runner_app",
+		Payload:      string(tmpForm),
+		Query:        tmpQuery,
+	}
+
+	tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
+	_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+
+	tmpChassisNumber := val["chassis_number"].(string)
+	tmpChassisNumberArray := strings.Split(tmpChassisNumber, ",")
+	for _, vCN := range tmpChassisNumberArray {
+
+		var tmpVehicleId int
+		if err := v.DB.QueryRow(fmt.Sprintf(query.GetVehicleIdByChassis, vCN)).Scan(&tmpVehicleId); err != nil {
+			fmt.Println(err.Error())
+		}
+
+		tmpQuery = fmt.Sprintf(query.CreateMSVehicleGroup,
+			helper.StringToInt(tmpGroupId, 0),
+			tmpVehicleId,
+		)
+
+		tmpForm, _ = json.Marshal(val)
+		tmpOauthRunner = lib.PayloadNsq{
+			RequestID:    uuid.New().String(),
+			Time:         uttime.Now().String(),
+			Service:      "vehicle",
+			DatabaseName: "dev_runner_app",
+			Payload:      string(tmpForm),
+			Query:        tmpQuery,
+		}
+
+		tmpByteOauthRunner, _ = json.Marshal(tmpOauthRunner)
+		_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+	}
+
 	return "", nil
 }

@@ -104,4 +104,12 @@ const (
 							gps_gsm = %s,
 							engine_no = %s
 						WHERE chassis_number = %s AND member_id = %s`
+
+	GetVehicleIdByChassis = `select vehicle_id from runner_app.mt_vehicle where chassis_number = '%s'`
+
+	SelectVehicleGroup = `select group_id::string from runner_app.mt_vehicle_group where member_id = '%s' and group_name = '%s'`
+
+	DeleteVehicleGroup = `delete from runner_app.mt_vehicle_group where group_id = '%s'`
+
+	DeleteMsVehicleGroup = `delete from runner_app.ms_vehicle_group where group_id = '%s'`
 )
