@@ -88,4 +88,10 @@ const (
 					 INNER JOIN um_runner.public.user_profile up on up.id = u.profile_id 
 					 INNER JOIN um_runner.public.organization org on org.id = u.organization_id
 					where u.username = $1 and u.deleted_at IS NULL`
+
+	GetUserByUserId = `SELECT u.id, u.username, u.password, u.access_type, u.user_status, u.user_type, u.realm_id, u.profile_id, up.name as profile_name, up.phone as profile_phone, up.email as profile_email, u.organization_id, org.name as organization_name, org.telp as organization_phone, org.email as organization_email, coalesce(u.created_at::TIMESTAMP(0)::STRING, '') as created_at, coalesce(u.updated_at::TIMESTAMP(0)::STRING, '') as updated_at, coalesce(u.deleted_at::TIMESTAMP(0)::STRING, '') as deleted_at 
+					 FROM um_runner.public.user u
+					 INNER JOIN um_runner.public.user_profile up on up.id = u.profile_id 
+					 INNER JOIN um_runner.public.organization org on org.id = u.organization_id
+					where u.id = $1 and u.deleted_at IS NULL`
 )

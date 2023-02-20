@@ -325,9 +325,30 @@ func (c customerUsecase) UpdateAuthRunnerUsecase(form []byte) (result string, se
 	_ = json.Unmarshal(form, &val)
 
 	var tmpOrganization models.RpcListOrganizationCustomerResult
+	var tmpUser models.UserResult
 	_, ok := val["organization_id"].(string)
 	if ok {
 		tmpOrganization, _ = c.organizationRepo.GetOrganizationByIdRepo(val["organization_id"].(string))
+	} else {
+		_, ok = val["user_id"].(string)
+		if ok {
+			rows, err := c.DB.Queryx(query.GetUserByUserId, val["user_id"].(string))
+			if err != nil {
+				fmt.Println(err.Error())
+				return result, serror.New(err.Error())
+			}
+
+			defer rows.Close()
+			for rows.Next() {
+				if err := rows.StructScan(&tmpUser); err != nil {
+					return result, serror.New("Failed scan for struct models")
+				}
+			}
+
+			if tmpUser.OrganizationId != nil {
+				tmpOrganization, _ = c.organizationRepo.GetOrganizationByIdRepo(*tmpUser.OrganizationId)
+			}
+		}
 	}
 	if tmpOrganization.ID == "" {
 		return "", nil
@@ -345,24 +366,11 @@ func (c customerUsecase) UpdateAuthRunnerUsecase(form []byte) (result string, se
 		fmt.Println(err.Error())
 	}
 
-	var tmpUser models.UserResult
-	_, ok = val["username"].(string)
-	if ok {
-		rows, err := c.DB.Queryx(query.GetUserByUsername, val["username"].(string))
-		if err != nil {
-			return result, serror.New(err.Error())
-		}
-
-		defer rows.Close()
-		for rows.Next() {
-			if err := rows.StructScan(&tmpUser); err != nil {
-				return result, serror.New("Failed scan for struct models")
-			}
-		}
-	} else {
-		_, ok = val["super_username"].(string)
+	var tmpUserId string
+	if tmpUser.ID == "" {
+		_, ok = val["username"].(string)
 		if ok {
-			rows, err := c.DB.Queryx(query.GetUserByUsername, val["super_username"].(string))
+			rows, err := c.DB.Queryx(query.GetUserByUsername, val["username"].(string))
 			if err != nil {
 				return result, serror.New(err.Error())
 			}
@@ -373,12 +381,29 @@ func (c customerUsecase) UpdateAuthRunnerUsecase(form []byte) (result string, se
 					return result, serror.New("Failed scan for struct models")
 				}
 			}
-		}
-	}
 
-	var tmpUserId string
-	if err := c.DB.QueryRow(fmt.Sprintf(query.GetUserIdByUsername, val["username"].(string))).Scan(&tmpUserId); err != nil {
-		fmt.Println(err.Error())
+			if err := c.DB.QueryRow(fmt.Sprintf(query.GetUserIdByUsername, val["username"].(string))).Scan(&tmpUserId); err != nil {
+				fmt.Println(err.Error())
+			}
+
+		} else {
+			_, ok = val["super_username"].(string)
+			if ok {
+				rows, err := c.DB.Queryx(query.GetUserByUsername, val["super_username"].(string))
+				if err != nil {
+					return result, serror.New(err.Error())
+				}
+
+				defer rows.Close()
+				for rows.Next() {
+					if err := rows.StructScan(&tmpUser); err != nil {
+						return result, serror.New("Failed scan for struct models")
+					}
+				}
+			}
+		}
+	} else {
+		tmpUserId = tmpUser.ID
 	}
 
 	if tmpUserId == "" {
