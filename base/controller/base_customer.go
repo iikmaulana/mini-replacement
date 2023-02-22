@@ -313,7 +313,9 @@ func (c customerUsecase) CreateAuthRunnerUsecase(form []byte) (result string, se
 				tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
 				_ = lib.SendNSQUsecase(tmpByteOauthRunner)
 
-				_, _ = c.PrivacyPolicyUsecase(form, tmpUserId)
+				if tmpRole == "13" || tmpRole == "14" {
+					_, _ = c.PrivacyPolicyUsecase(form, tmpUserId)
+				}
 			}
 		}
 	}
