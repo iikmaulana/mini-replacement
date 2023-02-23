@@ -388,8 +388,17 @@ func (c customerUsecase) UpdateAuthRunnerUsecase(form []byte) (result string, se
 				}
 			}
 
-			if err := c.DB.QueryRow(fmt.Sprintf(query.GetUserIdByUsername, val["username"].(string))).Scan(&tmpUserId); err != nil {
-				fmt.Println(err.Error())
+			_, userBefore := val["username_before"].(string)
+			if userBefore {
+				if val["username"].(string) != val["username_before"].(string) {
+					if err := c.DB.QueryRow(fmt.Sprintf(query.GetUserIdByUsername, val["username_before"].(string))).Scan(&tmpUserId); err != nil {
+						fmt.Println(err.Error())
+					}
+				}
+			} else {
+				if err := c.DB.QueryRow(fmt.Sprintf(query.GetUserIdByUsername, val["username"].(string))).Scan(&tmpUserId); err != nil {
+					fmt.Println(err.Error())
+				}
 			}
 
 		} else {
@@ -407,8 +416,17 @@ func (c customerUsecase) UpdateAuthRunnerUsecase(form []byte) (result string, se
 					}
 				}
 
-				if err := c.DB.QueryRow(fmt.Sprintf(query.GetUserIdByUsername, val["super_username"].(string))).Scan(&tmpUserId); err != nil {
-					fmt.Println(err.Error())
+				_, userBefore := val["username_before"].(string)
+				if userBefore {
+					if val["super_username"].(string) != val["username_before"].(string) {
+						if err := c.DB.QueryRow(fmt.Sprintf(query.GetUserIdByUsername, val["username_before"].(string))).Scan(&tmpUserId); err != nil {
+							fmt.Println(err.Error())
+						}
+					}
+				} else {
+					if err := c.DB.QueryRow(fmt.Sprintf(query.GetUserIdByUsername, val["super_username"].(string))).Scan(&tmpUserId); err != nil {
+						fmt.Println(err.Error())
+					}
 				}
 			}
 		}
