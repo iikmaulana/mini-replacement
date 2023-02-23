@@ -656,3 +656,60 @@ func (c customerUsecase) ApprovePrivacyPolicyUsecase(form []byte) (result string
 
 	return "", nil
 }
+
+func (c customerUsecase) DeleteAuthRunnerUsecase(form []byte) (result string, serr serror.SError) {
+	val := map[string]interface{}{}
+	_ = json.Unmarshal(form, &val)
+
+	var tmpUser models.UserResult
+	_, ok := val["id"].(string)
+	if ok {
+		_, ok = val["id"].(string)
+		if ok {
+			rows, err := c.DB.Queryx(query.GetUserByUserIdDeleted, val["id"].(string))
+			if err != nil {
+				fmt.Println(err.Error())
+				return result, serror.New(err.Error())
+			}
+
+			defer rows.Close()
+			for rows.Next() {
+				if err := rows.StructScan(&tmpUser); err != nil {
+					return result, serror.New("Failed scan for struct models")
+				}
+			}
+		}
+	}
+
+	if tmpUser.ID == "" {
+		return "", nil
+	}
+
+	if tmpUser.Username != nil {
+		var tmpUserId string
+		if err := c.DB.QueryRow(fmt.Sprintf(query.GetUserIdByUsername, *tmpUser.Username)).Scan(&tmpUserId); err != nil {
+			fmt.Println(err.Error())
+		}
+
+		if tmpUserId != "" {
+			tmpQuery := fmt.Sprintf(query.DeleteAuthRunner,
+				tmpUserId,
+			)
+
+			tmpForm, _ := json.Marshal(form)
+			tmpOauthRunner := lib.PayloadNsq{
+				RequestID:    uuid.New().String(),
+				Time:         uttime.Now().String(),
+				Service:      "UM",
+				DatabaseName: "dev_runner_app",
+				Payload:      string(tmpForm),
+				Query:        tmpQuery,
+			}
+
+			tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
+			_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+		}
+	}
+
+	return "", nil
+}

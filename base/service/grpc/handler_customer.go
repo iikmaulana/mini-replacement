@@ -133,6 +133,29 @@ func (handler CustomerHandler) UserActivation(ctx context.Context, form *packets
 	return output, nil
 }
 
+func (handler CustomerHandler) DeleteAuthRunner(ctx context.Context, form *packets.CustomerReplacementRequest) (output *packets.CustomerReplacementOutput, err error) {
+	output = &packets.CustomerReplacementOutput{
+		Status: 0,
+	}
+
+	tmpResult, serr := handler.customerUsecase.DeleteAuthRunnerUsecase(form.Data.Value)
+	if serr != nil {
+		return output, serr
+	}
+
+	b, err := json.Marshal(&tmpResult)
+	if err != nil {
+		return output, serror.NewFromError(err)
+	}
+
+	output.Status = 1
+	output.Data = &any.Any{
+		Value: b,
+	}
+
+	return output, nil
+}
+
 func (handler CustomerHandler) ChangePassword(ctx context.Context, form *packets.CustomerReplacementRequest) (output *packets.CustomerReplacementOutput, err error) {
 	output = &packets.CustomerReplacementOutput{
 		Status: 0,

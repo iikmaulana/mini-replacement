@@ -22,4 +22,5 @@ service CustomerReplacement {
     rpc CreateAuthRunner(CustomerReplacementRequest) returns(CustomerReplacementOutput){}
     rpc UserActivation(CustomerReplacementRequest) returns(CustomerReplacementOutput){}
     rpc ChangePassword(CustomerReplacementRequest) returns(CustomerReplacementOutput){}
+    rpc DeleteAuthRunner(CustomerReplacementRequest) returns(CustomerReplacementOutput){}
 }
