@@ -402,6 +402,10 @@ func (c customerUsecase) UpdateAuthRunnerUsecase(form []byte) (result string, se
 						return result, serror.New("Failed scan for struct models")
 					}
 				}
+
+				if err := c.DB.QueryRow(fmt.Sprintf(query.GetUserIdByUsername, val["super_username"].(string))).Scan(&tmpUserId); err != nil {
+					fmt.Println(err.Error())
+				}
 			}
 		}
 	} else {
