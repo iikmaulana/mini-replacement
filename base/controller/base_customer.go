@@ -485,6 +485,16 @@ func (c customerUsecase) UpdateAuthRunnerUsecase(form []byte) (result string, se
 					tmpStr := fmt.Sprintf("%s", *dealerId)
 					dealerId = &tmpStr
 				}
+				tmpUserUpdate := ""
+				_, userBefore := val["username_before"].(string)
+				if userBefore {
+					tmpUserUpdate = val["username_before"].(string)
+					if tmpUserUpdate == "" {
+						tmpUserUpdate = *tmpUser.Username
+					}
+				} else {
+					tmpUserUpdate = *tmpUser.Username
+				}
 				tmpQuery := fmt.Sprintf(query.UpdateAuthRunner,
 					*tmpUser.Username,
 					*tmpUser.Password,
@@ -494,7 +504,7 @@ func (c customerUsecase) UpdateAuthRunnerUsecase(form []byte) (result string, se
 					helper.StringToInt(*memberId, 0),
 					*dealerId,
 					*tmpUser.ProfilePhone,
-					*tmpUser.Username,
+					tmpUserUpdate,
 				)
 
 				tmpForm, _ := json.Marshal(val)
