@@ -227,20 +227,29 @@ func (c customerUsecase) CreateAuthRunnerUsecase(form []byte) (result string, se
 	tmpOrganization, _ := c.organizationRepo.GetOrganizationByIdRepo(*tmpUser.OrganizationId)
 
 	var dealerId *string
-	if tmpOrganization.ParentID != nil {
-		if err := c.DB.QueryRow(fmt.Sprintf(query.GetDealerIdByOrganizationId, *tmpOrganization.ParentID)).Scan(&dealerId); err != nil {
-			fmt.Println(err.Error())
-		}
-	}
-
 	var memberId *string
-	if err := c.DB.QueryRow(fmt.Sprintf(query.GetMemberIdByOrganizationId, *tmpUser.OrganizationId)).Scan(&memberId); err != nil {
-		fmt.Println(err.Error())
-	}
+	_, tmpRealm := val["realm_id"].(string)
+	if tmpRealm {
+		if val["realm_id"].(string) == lib.RealmIdDealer {
+			if err := c.DB.QueryRow(fmt.Sprintf(query.GetDealerIdByOrganizationId, val["organization_id"].(string))).Scan(&dealerId); err != nil {
+				fmt.Println(err.Error())
+			}
+		} else if val["realm_id"].(string) == lib.RealmIdCustomer {
+			if tmpOrganization.ParentID != nil {
+				if err := c.DB.QueryRow(fmt.Sprintf(query.GetDealerIdByOrganizationId, *tmpOrganization.ParentID)).Scan(&dealerId); err != nil {
+					fmt.Println(err.Error())
+				}
+			}
 
-	if memberId == nil {
-		if err := c.DB.QueryRow(fmt.Sprintf(query.GetMemberIdByEmailAndMemberName, *tmpUser.OrganizationEmail, *tmpUser.OrganizationName)).Scan(&memberId); err != nil {
-			fmt.Println(err.Error())
+			if err := c.DB.QueryRow(fmt.Sprintf(query.GetMemberIdByOrganizationId, *tmpUser.OrganizationId)).Scan(&memberId); err != nil {
+				fmt.Println(err.Error())
+			}
+
+			if memberId == nil {
+				if err := c.DB.QueryRow(fmt.Sprintf(query.GetMemberIdByEmailAndMemberName, *tmpUser.OrganizationEmail, *tmpUser.OrganizationName)).Scan(&memberId); err != nil {
+					fmt.Println(err.Error())
+				}
+			}
 		}
 	}
 
@@ -265,60 +274,135 @@ func (c customerUsecase) CreateAuthRunnerUsecase(form []byte) (result string, se
 		}
 	}
 
-	if memberId != nil {
-		if *memberId != "" {
-			if tmpUser.ID != "" {
-				tmpDefaultValue := ""
-				if tmpUser.Username == nil {
-					tmpUser.Username = &tmpDefaultValue
-				}
-				if tmpUser.Password == nil {
-					tmpUser.Password = &tmpDefaultValue
-				}
-				if tmpUser.ProfileName == nil {
-					tmpUser.ProfileName = &tmpDefaultValue
-				}
-				if tmpUser.ProfileEmail == nil {
-					tmpUser.ProfileEmail = &tmpDefaultValue
-				}
-				if tmpUser.ProfilePhone == nil {
-					tmpUser.ProfilePhone = &tmpDefaultValue
-				}
-				if dealerId == nil {
-					tmpDefaultValue = "NULL"
-					dealerId = &tmpDefaultValue
-				} else {
-					tmpStr := fmt.Sprintf("%s", *dealerId)
-					dealerId = &tmpStr
-				}
-				tmpUserId := lib.RandomCharacter(18)
-				tmpQuery := fmt.Sprintf(query.CreateAuthRunner,
-					helper.StringToInt(tmpUserId, 0),
-					*tmpUser.Username,
-					*tmpUser.Password,
-					*tmpUser.ProfileName,
-					*tmpUser.ProfileEmail,
-					tmpRole,
-					helper.StringToInt(*memberId, 0),
-					*dealerId,
-					*tmpUser.ProfilePhone,
-				)
+	if tmpUser.RealmId != nil {
+		if *tmpUser.RealmId == lib.RealmIdDealer {
+			if dealerId != nil {
+				if tmpUser.ID != "" {
+					tmpDefaultValue := ""
+					if tmpUser.Username == nil {
+						tmpUser.Username = &tmpDefaultValue
+					}
+					if tmpUser.Password == nil {
+						tmpUser.Password = &tmpDefaultValue
+					}
+					if tmpUser.ProfileName == nil {
+						tmpUser.ProfileName = &tmpDefaultValue
+					}
+					if tmpUser.ProfileEmail == nil {
+						tmpUser.ProfileEmail = &tmpDefaultValue
+					}
+					if tmpUser.ProfilePhone == nil {
+						tmpUser.ProfilePhone = &tmpDefaultValue
+					}
+					if dealerId == nil {
+						tmpDefaultValue = "NULL"
+						dealerId = &tmpDefaultValue
+					} else {
+						tmpStr := fmt.Sprintf("%s", *dealerId)
+						dealerId = &tmpStr
+					}
+					if memberId == nil {
+						tmpDefaultValue = "NULL"
+						memberId = &tmpDefaultValue
+					} else {
+						tmpStr := fmt.Sprintf("%s", *memberId)
+						memberId = &tmpStr
+					}
+					tmpUserId := lib.RandomCharacter(18)
+					tmpQuery := fmt.Sprintf(query.CreateAuthRunner,
+						helper.StringToInt(tmpUserId, 0),
+						*tmpUser.Username,
+						*tmpUser.Password,
+						*tmpUser.ProfileName,
+						*tmpUser.ProfileEmail,
+						tmpRole,
+						*memberId,
+						*dealerId,
+						*tmpUser.ProfilePhone,
+					)
 
-				tmpForm, _ := json.Marshal(val)
-				tmpOauthRunner := lib.PayloadNsq{
-					RequestID:    uuid.New().String(),
-					Time:         uttime.Now().String(),
-					Service:      "UM",
-					DatabaseName: "dev_runner_app",
-					Payload:      string(tmpForm),
-					Query:        tmpQuery,
+					tmpForm, _ := json.Marshal(val)
+					tmpOauthRunner := lib.PayloadNsq{
+						RequestID:    uuid.New().String(),
+						Time:         uttime.Now().String(),
+						Service:      "UM",
+						DatabaseName: "dev_runner_app",
+						Payload:      string(tmpForm),
+						Query:        tmpQuery,
+					}
+
+					tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
+					_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+
+					if tmpRole == "13" || tmpRole == "14" {
+						_, _ = c.PrivacyPolicyUsecase(form, tmpUserId)
+					}
 				}
+			}
+		} else if *tmpUser.RealmId == lib.RealmIdCustomer {
+			if dealerId != nil {
+				if *memberId != "" {
+					if tmpUser.ID != "" {
+						tmpDefaultValue := ""
+						if tmpUser.Username == nil {
+							tmpUser.Username = &tmpDefaultValue
+						}
+						if tmpUser.Password == nil {
+							tmpUser.Password = &tmpDefaultValue
+						}
+						if tmpUser.ProfileName == nil {
+							tmpUser.ProfileName = &tmpDefaultValue
+						}
+						if tmpUser.ProfileEmail == nil {
+							tmpUser.ProfileEmail = &tmpDefaultValue
+						}
+						if tmpUser.ProfilePhone == nil {
+							tmpUser.ProfilePhone = &tmpDefaultValue
+						}
+						if dealerId == nil {
+							tmpDefaultValue = "NULL"
+							dealerId = &tmpDefaultValue
+						} else {
+							tmpStr := fmt.Sprintf("%s", *dealerId)
+							dealerId = &tmpStr
+						}
+						if memberId == nil {
+							tmpDefaultValue = "NULL"
+							memberId = &tmpDefaultValue
+						} else {
+							tmpStr := fmt.Sprintf("%s", *memberId)
+							memberId = &tmpStr
+						}
+						tmpUserId := lib.RandomCharacter(18)
+						tmpQuery := fmt.Sprintf(query.CreateAuthRunner,
+							helper.StringToInt(tmpUserId, 0),
+							*tmpUser.Username,
+							*tmpUser.Password,
+							*tmpUser.ProfileName,
+							*tmpUser.ProfileEmail,
+							tmpRole,
+							*memberId,
+							*dealerId,
+							*tmpUser.ProfilePhone,
+						)
 
-				tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-				_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+						tmpForm, _ := json.Marshal(val)
+						tmpOauthRunner := lib.PayloadNsq{
+							RequestID:    uuid.New().String(),
+							Time:         uttime.Now().String(),
+							Service:      "UM",
+							DatabaseName: "dev_runner_app",
+							Payload:      string(tmpForm),
+							Query:        tmpQuery,
+						}
 
-				if tmpRole == "13" || tmpRole == "14" {
-					_, _ = c.PrivacyPolicyUsecase(form, tmpUserId)
+						tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
+						_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+
+						if tmpRole == "13" || tmpRole == "14" {
+							_, _ = c.PrivacyPolicyUsecase(form, tmpUserId)
+						}
+					}
 				}
 			}
 		}
@@ -361,9 +445,18 @@ func (c customerUsecase) UpdateAuthRunnerUsecase(form []byte) (result string, se
 	}
 
 	var dealerId *string
-	if tmpOrganization.ParentID != nil {
-		if err := c.DB.QueryRow(fmt.Sprintf(query.GetDealerIdByOrganizationId, *tmpOrganization.ParentID)).Scan(&dealerId); err != nil {
-			fmt.Println(err.Error())
+	_, tmpRealm := val["realm_id"].(string)
+	if tmpRealm {
+		if val["realm_id"].(string) == lib.RealmIdDealer {
+			if err := c.DB.QueryRow(fmt.Sprintf(query.GetDealerIdByOrganizationId, val["organization_id"].(string))).Scan(&dealerId); err != nil {
+				fmt.Println(err.Error())
+			}
+		} else if val["realm_id"].(string) == lib.RealmIdCustomer {
+			if tmpOrganization.ParentID != nil {
+				if err := c.DB.QueryRow(fmt.Sprintf(query.GetDealerIdByOrganizationId, *tmpOrganization.ParentID)).Scan(&dealerId); err != nil {
+					fmt.Println(err.Error())
+				}
+			}
 		}
 	}
 
@@ -459,66 +552,146 @@ func (c customerUsecase) UpdateAuthRunnerUsecase(form []byte) (result string, se
 		}
 	}
 
-	if memberId != nil {
-		if *memberId != "" {
-			if tmpUser.ID != "" {
-				tmpDefaultValue := ""
-				if tmpUser.Username == nil {
-					tmpUser.Username = &tmpDefaultValue
-				}
-				if tmpUser.Password == nil {
-					tmpUser.Password = &tmpDefaultValue
-				}
-				if tmpUser.ProfileName == nil {
-					tmpUser.ProfileName = &tmpDefaultValue
-				}
-				if tmpUser.ProfileEmail == nil {
-					tmpUser.ProfileEmail = &tmpDefaultValue
-				}
-				if tmpUser.ProfilePhone == nil {
-					tmpUser.ProfilePhone = &tmpDefaultValue
-				}
-				if dealerId == nil {
-					tmpDefaultValue = "NULL"
-					dealerId = &tmpDefaultValue
-				} else {
-					tmpStr := fmt.Sprintf("%s", *dealerId)
-					dealerId = &tmpStr
-				}
-				tmpUserUpdate := ""
-				_, userBefore := val["username_before"].(string)
-				if userBefore {
-					tmpUserUpdate = val["username_before"].(string)
-					if tmpUserUpdate == "" {
+	if tmpUser.RealmId != nil {
+		if *tmpUser.RealmId == lib.RealmIdDealer {
+			if dealerId != nil {
+				if tmpUser.ID != "" {
+					tmpDefaultValue := ""
+					if tmpUser.Username == nil {
+						tmpUser.Username = &tmpDefaultValue
+					}
+					if tmpUser.Password == nil {
+						tmpUser.Password = &tmpDefaultValue
+					}
+					if tmpUser.ProfileName == nil {
+						tmpUser.ProfileName = &tmpDefaultValue
+					}
+					if tmpUser.ProfileEmail == nil {
+						tmpUser.ProfileEmail = &tmpDefaultValue
+					}
+					if tmpUser.ProfilePhone == nil {
+						tmpUser.ProfilePhone = &tmpDefaultValue
+					}
+					if dealerId == nil {
+						tmpDefaultValue = "NULL"
+						dealerId = &tmpDefaultValue
+					} else {
+						tmpStr := fmt.Sprintf("%s", *dealerId)
+						dealerId = &tmpStr
+					}
+					tmpUserUpdate := ""
+					_, userBefore := val["username_before"].(string)
+					if userBefore {
+						tmpUserUpdate = val["username_before"].(string)
+						if tmpUserUpdate == "" {
+							tmpUserUpdate = *tmpUser.Username
+						}
+					} else {
 						tmpUserUpdate = *tmpUser.Username
 					}
-				} else {
-					tmpUserUpdate = *tmpUser.Username
-				}
-				tmpQuery := fmt.Sprintf(query.UpdateAuthRunner,
-					*tmpUser.Username,
-					*tmpUser.Password,
-					*tmpUser.ProfileName,
-					*tmpUser.ProfileEmail,
-					tmpRole,
-					helper.StringToInt(*memberId, 0),
-					*dealerId,
-					*tmpUser.ProfilePhone,
-					tmpUserUpdate,
-				)
+					if memberId == nil {
+						tmpDefaultValue = "NULL"
+						memberId = &tmpDefaultValue
+					} else {
+						tmpStr := fmt.Sprintf("%s", *memberId)
+						memberId = &tmpStr
+					}
+					tmpQuery := fmt.Sprintf(query.UpdateAuthRunner,
+						*tmpUser.Username,
+						*tmpUser.Password,
+						*tmpUser.ProfileName,
+						*tmpUser.ProfileEmail,
+						tmpRole,
+						*memberId,
+						*dealerId,
+						*tmpUser.ProfilePhone,
+						tmpUserUpdate,
+					)
 
-				tmpForm, _ := json.Marshal(val)
-				tmpOauthRunner := lib.PayloadNsq{
-					RequestID:    uuid.New().String(),
-					Time:         uttime.Now().String(),
-					Service:      "UM",
-					DatabaseName: "dev_runner_app",
-					Payload:      string(tmpForm),
-					Query:        tmpQuery,
-				}
+					tmpForm, _ := json.Marshal(val)
+					tmpOauthRunner := lib.PayloadNsq{
+						RequestID:    uuid.New().String(),
+						Time:         uttime.Now().String(),
+						Service:      "UM",
+						DatabaseName: "dev_runner_app",
+						Payload:      string(tmpForm),
+						Query:        tmpQuery,
+					}
 
-				tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-				_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+					tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
+					_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+				}
+			}
+		} else if *tmpUser.RealmId == lib.RealmIdCustomer {
+			if memberId != nil {
+				if *memberId != "" {
+					if tmpUser.ID != "" {
+						tmpDefaultValue := ""
+						if tmpUser.Username == nil {
+							tmpUser.Username = &tmpDefaultValue
+						}
+						if tmpUser.Password == nil {
+							tmpUser.Password = &tmpDefaultValue
+						}
+						if tmpUser.ProfileName == nil {
+							tmpUser.ProfileName = &tmpDefaultValue
+						}
+						if tmpUser.ProfileEmail == nil {
+							tmpUser.ProfileEmail = &tmpDefaultValue
+						}
+						if tmpUser.ProfilePhone == nil {
+							tmpUser.ProfilePhone = &tmpDefaultValue
+						}
+						if dealerId == nil {
+							tmpDefaultValue = "NULL"
+							dealerId = &tmpDefaultValue
+						} else {
+							tmpStr := fmt.Sprintf("%s", *dealerId)
+							dealerId = &tmpStr
+						}
+						tmpUserUpdate := ""
+						_, userBefore := val["username_before"].(string)
+						if userBefore {
+							tmpUserUpdate = val["username_before"].(string)
+							if tmpUserUpdate == "" {
+								tmpUserUpdate = *tmpUser.Username
+							}
+						} else {
+							tmpUserUpdate = *tmpUser.Username
+						}
+						if memberId == nil {
+							tmpDefaultValue = "NULL"
+							memberId = &tmpDefaultValue
+						} else {
+							tmpStr := fmt.Sprintf("%s", *memberId)
+							memberId = &tmpStr
+						}
+						tmpQuery := fmt.Sprintf(query.UpdateAuthRunner,
+							*tmpUser.Username,
+							*tmpUser.Password,
+							*tmpUser.ProfileName,
+							*tmpUser.ProfileEmail,
+							tmpRole,
+							*memberId,
+							*dealerId,
+							*tmpUser.ProfilePhone,
+							tmpUserUpdate,
+						)
+
+						tmpForm, _ := json.Marshal(val)
+						tmpOauthRunner := lib.PayloadNsq{
+							RequestID:    uuid.New().String(),
+							Time:         uttime.Now().String(),
+							Service:      "UM",
+							DatabaseName: "dev_runner_app",
+							Payload:      string(tmpForm),
+							Query:        tmpQuery,
+						}
+
+						tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
+						_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+					}
+				}
 			}
 		}
 	}
