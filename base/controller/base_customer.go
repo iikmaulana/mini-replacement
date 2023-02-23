@@ -285,7 +285,11 @@ func (c customerUsecase) CreateAuthRunnerUsecase(form []byte) (result string, se
 					tmpUser.ProfilePhone = &tmpDefaultValue
 				}
 				if dealerId == nil {
+					tmpDefaultValue = "NULL"
 					dealerId = &tmpDefaultValue
+				} else {
+					tmpStr := fmt.Sprintf("%s", *dealerId)
+					dealerId = &tmpStr
 				}
 				tmpUserId := lib.RandomCharacter(18)
 				tmpQuery := fmt.Sprintf(query.CreateAuthRunner,
@@ -440,6 +444,29 @@ func (c customerUsecase) UpdateAuthRunnerUsecase(form []byte) (result string, se
 	if memberId != nil {
 		if *memberId != "" {
 			if tmpUser.ID != "" {
+				tmpDefaultValue := ""
+				if tmpUser.Username == nil {
+					tmpUser.Username = &tmpDefaultValue
+				}
+				if tmpUser.Password == nil {
+					tmpUser.Password = &tmpDefaultValue
+				}
+				if tmpUser.ProfileName == nil {
+					tmpUser.ProfileName = &tmpDefaultValue
+				}
+				if tmpUser.ProfileEmail == nil {
+					tmpUser.ProfileEmail = &tmpDefaultValue
+				}
+				if tmpUser.ProfilePhone == nil {
+					tmpUser.ProfilePhone = &tmpDefaultValue
+				}
+				if dealerId == nil {
+					tmpDefaultValue = "NULL"
+					dealerId = &tmpDefaultValue
+				} else {
+					tmpStr := fmt.Sprintf("%s", *dealerId)
+					dealerId = &tmpStr
+				}
 				tmpQuery := fmt.Sprintf(query.UpdateAuthRunner,
 					*tmpUser.Username,
 					*tmpUser.Password,

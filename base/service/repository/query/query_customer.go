@@ -37,7 +37,7 @@ const (
 							dealer_id,
 							phone,
 							creation_date
-							) VALUES (%d,'%s','%s','%s','%s','%s',%d,'%s','%s',now())
+							) VALUES (%d,'%s','%s','%s','%s','%s',%d,%s,'%s',now())
 						`
 
 	UpdateAuthRunner = `UPDATE runner_app.auth_runner
@@ -47,7 +47,7 @@ const (
 							email = '%s',
 							role_id = '%s',
 							member_id = %d,
-							dealer_id = '%s',
+							dealer_id = %s,
 							phone = '%s'
 						WHERE
 					  		username = '%s'
