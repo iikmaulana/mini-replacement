@@ -157,9 +157,21 @@ func (v vehicleUsecase) CreateMtVehicle(form []byte) (result string, serr serror
 								vv.TypeId = &tmpStr
 							}
 
-							tmpQuery := fmt.Sprintf(query.CreateMtVehicleV2, helper.StringToInt(tmpVehicleId, 0),
-								vv.ChassisNumber, *vv.Imei, *vv.VehicleName, *vv.VehicleNumber, *vv.MemberID,
-								*vv.IsActive, *vv.ActivationDate, *vv.DeviceStatus, *vv.PostDealerID, *vv.ActvDealerID, *vv.GsmNumber, *vv.EngineNumber, *vv.TypeId)
+							tmpQuery := fmt.Sprintf(query.CreateMtVehicleV2,
+								helper.StringToInt(tmpVehicleId, 0),
+								vv.ChassisNumber,
+								*vv.Imei,
+								*vv.VehicleName,
+								*vv.VehicleNumber,
+								*vv.MemberID,
+								*vv.IsActive,
+								*vv.ActivationDate,
+								*vv.DeviceStatus,
+								*vv.PostDealerID,
+								*vv.ActvDealerID,
+								*vv.GsmNumber,
+								*vv.EngineNumber,
+								*vv.TypeId)
 
 							tmpForm, _ := json.Marshal(val)
 							tmpOauthRunner := lib.PayloadNsq{
@@ -428,9 +440,22 @@ func (v vehicleUsecase) UpdateMtVehicle(form []byte) (result string, serr serror
 						vv.TypeId = &tmpStr
 					}
 
-					tmpQuery := fmt.Sprintf(query.UpdateMtVehcileV2, vv.ChassisNumber, *vv.Imei, *vv.VehicleName, *vv.VehicleNumber, *vv.MemberID,
-						*vv.IsActive, *vv.ActivationDate, *vv.DeviceStatus, *vv.PostDealerID, *vv.ActvDealerID, *vv.GsmNumber, *vv.EngineNumber,
-						vv.ChassisNumber, *vv.MemberID, *vv.TypeId)
+					tmpQuery := fmt.Sprintf(query.UpdateMtVehcileV2,
+						vv.ChassisNumber,
+						*vv.Imei,
+						*vv.VehicleName,
+						*vv.VehicleNumber,
+						*vv.MemberID,
+						*vv.IsActive,
+						*vv.ActivationDate,
+						*vv.DeviceStatus,
+						*vv.PostDealerID,
+						*vv.ActvDealerID,
+						*vv.GsmNumber,
+						*vv.EngineNumber,
+						*vv.TypeId,
+						vv.ChassisNumber,
+						*vv.MemberID)
 
 					tmpForm, _ := json.Marshal(val)
 					tmpOauthRunner := lib.PayloadNsq{
@@ -545,9 +570,22 @@ func (v vehicleUsecase) UpdateMtVehicle(form []byte) (result string, serr serror
 					vv.TypeId = &tmpStr
 				}
 
-				tmpQuery := fmt.Sprintf(query.UpdateMtVehcileV2, vv.ChassisNumber, *vv.Imei, *vv.VehicleName, *vv.VehicleNumber, *vv.MemberID,
-					*vv.IsActive, *vv.ActivationDate, *vv.DeviceStatus, *vv.PostDealerID, *vv.ActvDealerID, *vv.GsmNumber, *vv.EngineNumber,
-					vv.ChassisNumber, *vv.MemberID, *vv.TypeId)
+				tmpQuery := fmt.Sprintf(query.UpdateMtVehcileV2,
+					vv.ChassisNumber,
+					*vv.Imei,
+					*vv.VehicleName,
+					*vv.VehicleNumber,
+					*vv.MemberID,
+					*vv.IsActive,
+					*vv.ActivationDate,
+					*vv.DeviceStatus,
+					*vv.PostDealerID,
+					*vv.ActvDealerID,
+					*vv.GsmNumber,
+					*vv.EngineNumber,
+					*vv.TypeId,
+					vv.ChassisNumber,
+					*vv.MemberID)
 
 				tmpForm, _ := json.Marshal(val)
 				tmpOauthRunner := lib.PayloadNsq{

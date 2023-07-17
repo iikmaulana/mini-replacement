@@ -7,7 +7,7 @@ import (
 )
 
 func RandomCharacter(length int) string {
-	tmpStr := "0123456789"
+	tmpStr := "123456789"
 	e, r := len(tmpStr), ""
 
 	rand.Seed(time.Now().UnixNano())
