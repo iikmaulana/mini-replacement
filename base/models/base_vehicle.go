@@ -70,6 +70,7 @@ type VehicleV3 struct {
 	GsmNumber      *string `json:"gsm_number" db:"gsm_number"`
 	EngineNumber   *string `json:"engine_number" db:"engine_number"`
 	CreatedAt      *string `json:"created_at" db:"created_at"`
+	TypeId         *string `json:"type_id" db:"type_id"`
 }
 
 type VehicleReq struct {

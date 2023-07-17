@@ -150,10 +150,16 @@ func (v vehicleUsecase) CreateMtVehicle(form []byte) (result string, serr serror
 								tmpStr := fmt.Sprintf("'%s'", *vv.EngineNumber)
 								vv.EngineNumber = &tmpStr
 							}
+							if vv.TypeId == nil {
+								vv.TypeId = &tmpDefaultValue
+							} else {
+								tmpStr := fmt.Sprintf("'%s'", *vv.TypeId)
+								vv.TypeId = &tmpStr
+							}
 
 							tmpQuery := fmt.Sprintf(query.CreateMtVehicleV2, helper.StringToInt(tmpVehicleId, 0),
 								vv.ChassisNumber, *vv.Imei, *vv.VehicleName, *vv.VehicleNumber, *vv.MemberID,
-								*vv.IsActive, *vv.ActivationDate, *vv.DeviceStatus, *vv.PostDealerID, *vv.ActvDealerID, *vv.GsmNumber, *vv.EngineNumber)
+								*vv.IsActive, *vv.ActivationDate, *vv.DeviceStatus, *vv.PostDealerID, *vv.ActvDealerID, *vv.GsmNumber, *vv.EngineNumber, *vv.TypeId)
 
 							tmpForm, _ := json.Marshal(val)
 							tmpOauthRunner := lib.PayloadNsq{
@@ -287,10 +293,16 @@ func (v vehicleUsecase) CreateMtVehicle(form []byte) (result string, serr serror
 							tmpStr := fmt.Sprintf("'%s'", *vv.EngineNumber)
 							vv.EngineNumber = &tmpStr
 						}
+						if vv.TypeId == nil {
+							vv.TypeId = &tmpDefaultValue
+						} else {
+							tmpStr := fmt.Sprintf("'%s'", *vv.TypeId)
+							vv.TypeId = &tmpStr
+						}
 
 						tmpQuery := fmt.Sprintf(query.CreateMtVehicleV2, helper.StringToInt(tmpVehicleId, 0),
 							vv.ChassisNumber, *vv.Imei, *vv.VehicleName, *vv.VehicleNumber, *vv.MemberID,
-							*vv.IsActive, *vv.ActivationDate, *vv.DeviceStatus, *vv.PostDealerID, *vv.ActvDealerID, *vv.GsmNumber, *vv.EngineNumber)
+							*vv.IsActive, *vv.ActivationDate, *vv.DeviceStatus, *vv.PostDealerID, *vv.ActvDealerID, *vv.GsmNumber, *vv.EngineNumber, *vv.TypeId)
 
 						tmpForm, _ := json.Marshal(val)
 						tmpOauthRunner := lib.PayloadNsq{
@@ -409,10 +421,16 @@ func (v vehicleUsecase) UpdateMtVehicle(form []byte) (result string, serr serror
 						tmpStr := fmt.Sprintf("'%s'", *vv.EngineNumber)
 						vv.EngineNumber = &tmpStr
 					}
+					if vv.TypeId == nil {
+						vv.TypeId = &tmpDefaultValue
+					} else {
+						tmpStr := fmt.Sprintf("'%s'", *vv.TypeId)
+						vv.TypeId = &tmpStr
+					}
 
 					tmpQuery := fmt.Sprintf(query.UpdateMtVehcileV2, vv.ChassisNumber, *vv.Imei, *vv.VehicleName, *vv.VehicleNumber, *vv.MemberID,
 						*vv.IsActive, *vv.ActivationDate, *vv.DeviceStatus, *vv.PostDealerID, *vv.ActvDealerID, *vv.GsmNumber, *vv.EngineNumber,
-						vv.ChassisNumber, *vv.MemberID)
+						vv.ChassisNumber, *vv.MemberID, *vv.TypeId)
 
 					tmpForm, _ := json.Marshal(val)
 					tmpOauthRunner := lib.PayloadNsq{
@@ -520,10 +538,16 @@ func (v vehicleUsecase) UpdateMtVehicle(form []byte) (result string, serr serror
 					tmpStr := fmt.Sprintf("'%s'", *vv.EngineNumber)
 					vv.EngineNumber = &tmpStr
 				}
+				if vv.TypeId == nil {
+					vv.TypeId = &tmpDefaultValue
+				} else {
+					tmpStr := fmt.Sprintf("'%s'", *vv.TypeId)
+					vv.TypeId = &tmpStr
+				}
 
 				tmpQuery := fmt.Sprintf(query.UpdateMtVehcileV2, vv.ChassisNumber, *vv.Imei, *vv.VehicleName, *vv.VehicleNumber, *vv.MemberID,
 					*vv.IsActive, *vv.ActivationDate, *vv.DeviceStatus, *vv.PostDealerID, *vv.ActvDealerID, *vv.GsmNumber, *vv.EngineNumber,
-					vv.ChassisNumber, *vv.MemberID)
+					vv.ChassisNumber, *vv.MemberID, *vv.TypeId)
 
 				tmpForm, _ := json.Marshal(val)
 				tmpOauthRunner := lib.PayloadNsq{

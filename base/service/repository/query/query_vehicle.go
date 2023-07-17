@@ -56,15 +56,18 @@ const (
 						when vh.activation_status = 1 then 0
 						else 1
 					end is_active,
-					vh.activation_date, 
+					vh.approval_date as activation_date, 
 					vv.device_status, 
 					md.dealer_id as post_dealer_id, 
 					md.dealer_id as actv_dealer_id, 
 					vh.gsm_number, 
 					vv.engine_number,
-					vh.created_at
+					vh.created_at,
+					mv.id as type_id
 				from db_vehicle.veh_vehicle_history vh
 				left join db_vehicle.veh_vehicle vv on vh.chassis_number = vv.chassis_number
+				left join db_vehicle.veh_vehicle_type vvt on vv.vehicle_type_id = vvt.vehicle_type_id
+				left join runner_app.mt_vehtype mv on vvt.vehicle_type_id = mv.type_color
 				left join db_vehicle.veh_vehicle_dealer vvd on vh.chassis_number = vvd.chassis_number
 				left join um_runner.member_tmp mm on mm.organization_id = vh.owner_id
 				left join um_runner.member_tmp md on md.organization_id = vvd.dealer_id
@@ -85,9 +88,10 @@ const (
 							post_dealer_id,
 							actv_dealer_id,
 							gps_gsm,
-							engine_no) 
+							engine_no,
+							type_id) 
 						VALUES
-							 (%d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)`
+							 (%d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)`
 
 	UpdateMtVehcileV2 = `UPDATE runner_app.mt_vehicle
 							SET 
@@ -102,7 +106,8 @@ const (
 							post_dealer_id = %s,
 							actv_dealer_id = %s,
 							gps_gsm = %s,
-							engine_no = %s
+							engine_no = %s,
+							type_id = %s
 						WHERE chassis_number = %s AND member_id = %s`
 
 	GetVehicleIdByChassis = `select vehicle_id from runner_app.mt_vehicle where chassis_number = '%s'`
