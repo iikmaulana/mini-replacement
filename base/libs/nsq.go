@@ -18,20 +18,15 @@ type PayloadNsq struct {
 	Query        string `json:"query"`
 }
 
-func SendNSQUsecase(form []byte) (serr serror.SError) {
-
-	config := nsq.NewConfig()
-	producer, err := nsq.NewProducer(os.Getenv("SENDER_NSQ_SERVER_REPLACEMENT"), config)
-	if err != nil {
-		return serror.NewFromError(err)
-	}
-	defer producer.Stop()
+func SendNSQUsecase(nsq *nsq.Producer, form []byte) (serr serror.SError) {
 
 	topic := os.Getenv("SENDER_NSQ_TOPIC_REPLACEMENT")
-	err = producer.Publish(topic, form)
+	err := nsq.Publish(topic, form)
 	if err != nil {
 		return serror.NewFromError(err)
 	}
+
+	nsq.Stop()
 
 	return nil
 }

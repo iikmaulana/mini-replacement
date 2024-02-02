@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/nsqio/go-nsq"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/uzzeet/uzzeet-gateway/controller"
@@ -20,6 +21,7 @@ type Config struct {
 	Server   *service.Server
 	Gateway  *service.Service
 	CK       *sqlx.DB
+	NSQ      *nsq.Producer
 }
 
 func Init() Config {
@@ -36,6 +38,11 @@ func Init() Config {
 	}
 
 	errx = cfg.InitCockroachdb()
+	if errx != nil {
+		errx.Panic()
+	}
+
+	errx = cfg.InitNsqService()
 	if errx != nil {
 		errx.Panic()
 	}

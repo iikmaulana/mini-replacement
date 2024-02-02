@@ -31,8 +31,8 @@ func (cfg Config) InitService() serror.SError {
 		return serr
 	}
 
-	customerUsecase := controller.NewCustomerUsecase(cfg.DB, userRepo, organizationRepo)
-	vehicleUsecase := controller.NewVehicleUsecase(cfg.DB, userRepo, organizationRepo, vehicleRepo, vehicleHistoryRepo)
+	customerUsecase := controller.NewCustomerUsecase(cfg.DB, userRepo, organizationRepo, cfg.NSQ)
+	vehicleUsecase := controller.NewVehicleUsecase(cfg.DB, userRepo, organizationRepo, vehicleRepo, vehicleHistoryRepo, cfg.NSQ)
 
 	packets.RegisterCustomerReplacementServer(cfg.Server.Instance(), grpc.NewCustomerHandler(customerUsecase))
 	packets.RegisterVehicleReplacementServer(cfg.Server.Instance(), grpc.NewVehicleHandler(vehicleUsecase))

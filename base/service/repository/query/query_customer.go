@@ -15,6 +15,19 @@ const (
 							) VALUES (%d,'%s','%s','%s','%s','%s','%s','%s',now(),'not_active')
 						`
 
+	CreateMtMemberEngine = `INSERT INTO runner_app.mt_member (
+							member_id,
+							member_name,
+							company,
+							email,
+							phone,
+							dealer_id,
+							member_code,
+							company_type,
+							date_registration,
+							status_engage
+							) VALUES (%d,'%s','%s','%s','%s','%s','%s','%s','%s','not_active')`
+
 	UpdateMtMember = `UPDATE runner_app.mt_member 
 							SET member_name = '%s',
 							company = '%s',
@@ -38,6 +51,20 @@ const (
 							phone,
 							creation_date
 							) VALUES (%d,'%s','%s','%s','%s','%s',%s,%s,'%s',now())
+						`
+
+	CreateAuthRunnerEngine = `INSERT INTO runner_app.auth_runner (
+							user_id,
+							username,
+							password,
+							user_fullname,
+							email,
+							role_id,
+							member_id,
+							dealer_id,
+							phone,
+							creation_date
+							) VALUES (%d,'%s','%s','%s','%s','%s',%s,%s,'%s','%s')
 						`
 
 	UpdateAuthRunner = `UPDATE runner_app.auth_runner
@@ -82,6 +109,9 @@ const (
 					`
 
 	CreateMemberTmp = `insert into um_runner.member_tmp (organization_id,member_id,dealer_id) values ($1,$2,$3)`
+
+	CreateMemberEngine = `INSERT INTO um_runner.member_tmp (organization_id,member_id) VALUES ('%s','%s')`
+	CheckMemberEngine  = `SELECT member_id FROM um_runner.member_tmp WHERE organization_id = '%s'`
 
 	GetUserByUsername = `SELECT u.id, u.username, u.password, u.access_type, u.user_status, u.user_type, u.realm_id, u.profile_id, up.name as profile_name, up.phone as profile_phone, up.email as profile_email, u.organization_id, org.name as organization_name, org.telp as organization_phone, org.email as organization_email, coalesce(u.created_at::TIMESTAMP(0)::STRING, '') as created_at, coalesce(u.updated_at::TIMESTAMP(0)::STRING, '') as updated_at, coalesce(u.deleted_at::TIMESTAMP(0)::STRING, '') as deleted_at 
 					 FROM um_runner.public.user u

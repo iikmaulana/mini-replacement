@@ -9,9 +9,11 @@ import (
 	"github.com/iikmaulana/mini-replacement/base/service"
 	"github.com/iikmaulana/mini-replacement/base/service/repository/query"
 	"github.com/jmoiron/sqlx"
+	"github.com/nsqio/go-nsq"
 	"github.com/uzzeet/uzzeet-gateway/libs/helper"
 	"github.com/uzzeet/uzzeet-gateway/libs/helper/serror"
 	"github.com/uzzeet/uzzeet-gateway/libs/utils/uttime"
+	"os"
 	"reflect"
 )
 
@@ -19,10 +21,11 @@ type customerUsecase struct {
 	DB               *sqlx.DB
 	userRepo         service.UserRepo
 	organizationRepo service.OrganizationRepo
+	NSQ              *nsq.Producer
 }
 
-func NewCustomerUsecase(db *sqlx.DB, userRepo service.UserRepo, organizationRepo service.OrganizationRepo) service.CustomerUsecase {
-	return customerUsecase{DB: db, userRepo: userRepo, organizationRepo: organizationRepo}
+func NewCustomerUsecase(db *sqlx.DB, userRepo service.UserRepo, organizationRepo service.OrganizationRepo, nsq *nsq.Producer) service.CustomerUsecase {
+	return customerUsecase{DB: db, userRepo: userRepo, organizationRepo: organizationRepo, NSQ: nsq}
 }
 
 func (c customerUsecase) CreateMtMemberUsecase(form []byte) (result string, serr serror.SError) {
@@ -93,13 +96,13 @@ func (c customerUsecase) CreateMtMemberUsecase(form []byte) (result string, serr
 			RequestID:    uuid.New().String(),
 			Time:         uttime.Now().String(),
 			Service:      "UM",
-			DatabaseName: "dev_runner_app",
+			DatabaseName: os.Getenv("DBV2_RUNNER"),
 			Payload:      string(tmpForm),
 			Query:        tmpQuery,
 		}
 
 		tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-		_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+		_ = c.NSQ.Publish(os.Getenv("SENDER_NSQ_TOPIC_REPLACEMENT"), tmpByteOauthRunner)
 
 		_, _ = c.CreateAuthRunnerUsecase(form)
 	}
@@ -174,13 +177,13 @@ func (c customerUsecase) UpdateMtMemberUsecase(form []byte) (result string, serr
 				RequestID:    uuid.New().String(),
 				Time:         uttime.Now().String(),
 				Service:      "UM",
-				DatabaseName: "dev_runner_app",
+				DatabaseName: os.Getenv("DBV2_RUNNER"),
 				Payload:      string(tmpForm),
 				Query:        tmpQuery,
 			}
 
 			tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-			_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+			_ = lib.SendNSQUsecase(c.NSQ, tmpByteOauthRunner)
 
 			_, _ = c.UpdateAuthRunnerUsecase(form)
 		}
@@ -326,13 +329,13 @@ func (c customerUsecase) CreateAuthRunnerUsecase(form []byte) (result string, se
 						RequestID:    uuid.New().String(),
 						Time:         uttime.Now().String(),
 						Service:      "UM",
-						DatabaseName: "dev_runner_app",
+						DatabaseName: os.Getenv("DBV2_RUNNER"),
 						Payload:      string(tmpForm),
 						Query:        tmpQuery,
 					}
 
 					tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-					_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+					_ = lib.SendNSQUsecase(c.NSQ, tmpByteOauthRunner)
 
 					if tmpRole == "13" || tmpRole == "14" {
 						_, _ = c.PrivacyPolicyUsecase(form, tmpUserId)
@@ -391,13 +394,13 @@ func (c customerUsecase) CreateAuthRunnerUsecase(form []byte) (result string, se
 							RequestID:    uuid.New().String(),
 							Time:         uttime.Now().String(),
 							Service:      "UM",
-							DatabaseName: "dev_runner_app",
+							DatabaseName: os.Getenv("DBV2_RUNNER"),
 							Payload:      string(tmpForm),
 							Query:        tmpQuery,
 						}
 
 						tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-						_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+						_ = lib.SendNSQUsecase(c.NSQ, tmpByteOauthRunner)
 
 						if tmpRole == "13" || tmpRole == "14" {
 							_, _ = c.PrivacyPolicyUsecase(form, tmpUserId)
@@ -609,13 +612,13 @@ func (c customerUsecase) UpdateAuthRunnerUsecase(form []byte) (result string, se
 						RequestID:    uuid.New().String(),
 						Time:         uttime.Now().String(),
 						Service:      "UM",
-						DatabaseName: "dev_runner_app",
+						DatabaseName: os.Getenv("DBV2_RUNNER"),
 						Payload:      string(tmpForm),
 						Query:        tmpQuery,
 					}
 
 					tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-					_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+					_ = lib.SendNSQUsecase(c.NSQ, tmpByteOauthRunner)
 				}
 			}
 		} else if *tmpUser.RealmId == lib.RealmIdCustomer {
@@ -679,13 +682,13 @@ func (c customerUsecase) UpdateAuthRunnerUsecase(form []byte) (result string, se
 							RequestID:    uuid.New().String(),
 							Time:         uttime.Now().String(),
 							Service:      "UM",
-							DatabaseName: "dev_runner_app",
+							DatabaseName: os.Getenv("DBV2_RUNNER"),
 							Payload:      string(tmpForm),
 							Query:        tmpQuery,
 						}
 
 						tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-						_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+						_ = lib.SendNSQUsecase(c.NSQ, tmpByteOauthRunner)
 					}
 				}
 			}
@@ -716,13 +719,13 @@ func (c customerUsecase) UserActivationUsecase(form []byte) (result string, serr
 					RequestID:    uuid.New().String(),
 					Time:         uttime.Now().String(),
 					Service:      "UM",
-					DatabaseName: "dev_runner_app",
+					DatabaseName: os.Getenv("DBV2_RUNNER"),
 					Payload:      string(tmpForm),
 					Query:        tmpQuery,
 				}
 
 				tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-				_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+				_ = lib.SendNSQUsecase(c.NSQ, tmpByteOauthRunner)
 			}
 		}
 	}
@@ -743,13 +746,13 @@ func (c customerUsecase) ChangePasswordUsecase(form []byte) (result string, serr
 		RequestID:    uuid.New().String(),
 		Time:         uttime.Now().String(),
 		Service:      "UM",
-		DatabaseName: "dev_runner_app",
+		DatabaseName: os.Getenv("DBV2_RUNNER"),
 		Payload:      string(tmpForm),
 		Query:        tmpQuery,
 	}
 
 	tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-	_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+	_ = lib.SendNSQUsecase(c.NSQ, tmpByteOauthRunner)
 
 	return "", nil
 }
@@ -775,13 +778,13 @@ func (c customerUsecase) PrivacyPolicyUsecase(form []byte, tmpUserId string) (re
 			RequestID:    uuid.New().String(),
 			Time:         uttime.Now().String(),
 			Service:      "UM",
-			DatabaseName: "dev_runner_app",
+			DatabaseName: os.Getenv("DBV2_RUNNER"),
 			Payload:      string(tmpForm),
 			Query:        tmpQuery,
 		}
 
 		tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-		_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+		_ = lib.SendNSQUsecase(c.NSQ, tmpByteOauthRunner)
 	}
 
 	return "", nil
@@ -812,13 +815,13 @@ func (c customerUsecase) ApprovePrivacyPolicyUsecase(form []byte) (result string
 				RequestID:    uuid.New().String(),
 				Time:         uttime.Now().String(),
 				Service:      "UM",
-				DatabaseName: "dev_runner_app",
+				DatabaseName: os.Getenv("DBV2_RUNNER"),
 				Payload:      string(tmpForm),
 				Query:        tmpQuery,
 			}
 
 			tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-			_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+			_ = lib.SendNSQUsecase(c.NSQ, tmpByteOauthRunner)
 		}
 
 	}
@@ -870,13 +873,13 @@ func (c customerUsecase) DeleteAuthRunnerUsecase(form []byte) (result string, se
 				RequestID:    uuid.New().String(),
 				Time:         uttime.Now().String(),
 				Service:      "UM",
-				DatabaseName: "dev_runner_app",
+				DatabaseName: os.Getenv("DBV2_RUNNER"),
 				Payload:      string(tmpForm),
 				Query:        tmpQuery,
 			}
 
 			tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-			_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+			_ = lib.SendNSQUsecase(c.NSQ, tmpByteOauthRunner)
 		}
 	}
 

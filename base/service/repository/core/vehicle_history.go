@@ -72,3 +72,32 @@ func (v vehicleHistoryRepository) VehicleHistory_GetByChassisRepo(form models.Ge
 
 	return result, nil
 }
+
+func (v vehicleHistoryRepository) VehicleHistory_GetRepo(form models.GetVehHistoryReq) (result models.VehHistoryListMetaResult, serr serror.SError) {
+	byte, err := json.Marshal(form)
+	if err != nil {
+		return result, serror.NewFromError(err)
+	}
+
+	data := any.Any{
+		Value: byte,
+	}
+
+	output, err := v.client.VehicleHistory_Get(context.Background(), &packets.VehHistoryRequest{
+		Data: &data,
+	})
+
+	if err != nil {
+		serrFmt := fmt.Sprintf("[service][repository][core][vehicles][OwnerID:%s] while grpc GetVehicleHistoryRepo: %v", form.OwnerID, err)
+		logger.Err(serrFmt)
+		return result, serror.NewFromErrorc(err, serrFmt)
+	}
+	if output.GetStatus() == 1 {
+		err := json.Unmarshal(output.GetData().Value, &result)
+		if err != nil {
+			return result, serror.NewFromErrorc(err, "Gagal mapping")
+		}
+	}
+
+	return result, nil
+}

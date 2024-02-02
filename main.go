@@ -2,10 +2,9 @@ package main
 
 import (
 	"github.com/iikmaulana/mini-replacement/base/config"
-	"log"
-
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"log"
 )
 
 func main() {

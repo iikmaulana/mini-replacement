@@ -9,9 +9,11 @@ import (
 	"github.com/iikmaulana/mini-replacement/base/service"
 	"github.com/iikmaulana/mini-replacement/base/service/repository/query"
 	"github.com/jmoiron/sqlx"
+	"github.com/nsqio/go-nsq"
 	"github.com/uzzeet/uzzeet-gateway/libs/helper"
 	"github.com/uzzeet/uzzeet-gateway/libs/helper/serror"
 	"github.com/uzzeet/uzzeet-gateway/libs/utils/uttime"
+	"os"
 	"strings"
 )
 
@@ -21,10 +23,11 @@ type vehicleUsecase struct {
 	organizationRepo   service.OrganizationRepo
 	vehicleRepo        service.VehicleRepo
 	vehicleHistoryRepo service.VehicleHistoryRepo
+	NSQ                *nsq.Producer
 }
 
-func NewVehicleUsecase(db *sqlx.DB, userRepo service.UserRepo, organizationRepo service.OrganizationRepo, vehicleRepo service.VehicleRepo, vehicleHistoryRepo service.VehicleHistoryRepo) service.VehicleUsecase {
-	return vehicleUsecase{DB: db, userRepo: userRepo, organizationRepo: organizationRepo, vehicleRepo: vehicleRepo, vehicleHistoryRepo: vehicleHistoryRepo}
+func NewVehicleUsecase(db *sqlx.DB, userRepo service.UserRepo, organizationRepo service.OrganizationRepo, vehicleRepo service.VehicleRepo, vehicleHistoryRepo service.VehicleHistoryRepo, nsq *nsq.Producer) service.VehicleUsecase {
+	return vehicleUsecase{DB: db, userRepo: userRepo, organizationRepo: organizationRepo, vehicleRepo: vehicleRepo, vehicleHistoryRepo: vehicleHistoryRepo, NSQ: nsq}
 }
 
 func (v vehicleUsecase) CreateMtVehicle(form []byte) (result string, serr serror.SError) {
@@ -178,12 +181,12 @@ func (v vehicleUsecase) CreateMtVehicle(form []byte) (result string, serr serror
 								RequestID:    uuid.New().String(),
 								Time:         uttime.Now().String(),
 								Service:      "vehicle",
-								DatabaseName: "dev_runner_app",
+								DatabaseName: os.Getenv("DBV2_RUNNER"),
 								Payload:      string(tmpForm),
 								Query:        tmpQuery,
 							}
 							tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-							_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+							_ = lib.SendNSQUsecase(v.NSQ, tmpByteOauthRunner)
 						}
 					}
 				}
@@ -321,12 +324,12 @@ func (v vehicleUsecase) CreateMtVehicle(form []byte) (result string, serr serror
 							RequestID:    uuid.New().String(),
 							Time:         uttime.Now().String(),
 							Service:      "vehicle",
-							DatabaseName: "dev_runner_app",
+							DatabaseName: os.Getenv("DBV2_RUNNER"),
 							Payload:      string(tmpForm),
 							Query:        tmpQuery,
 						}
 						tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-						_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+						_ = lib.SendNSQUsecase(v.NSQ, tmpByteOauthRunner)
 					}
 				}
 			}
@@ -462,12 +465,12 @@ func (v vehicleUsecase) UpdateMtVehicle(form []byte) (result string, serr serror
 						RequestID:    uuid.New().String(),
 						Time:         uttime.Now().String(),
 						Service:      "vehicle",
-						DatabaseName: "dev_runner_app",
+						DatabaseName: os.Getenv("DBV2_RUNNER"),
 						Payload:      string(tmpForm),
 						Query:        tmpQuery,
 					}
 					tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-					_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+					_ = lib.SendNSQUsecase(v.NSQ, tmpByteOauthRunner)
 				}
 			}
 		}
@@ -592,12 +595,12 @@ func (v vehicleUsecase) UpdateMtVehicle(form []byte) (result string, serr serror
 					RequestID:    uuid.New().String(),
 					Time:         uttime.Now().String(),
 					Service:      "vehicle",
-					DatabaseName: "dev_runner_app",
+					DatabaseName: os.Getenv("DBV2_RUNNER"),
 					Payload:      string(tmpForm),
 					Query:        tmpQuery,
 				}
 				tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-				_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+				_ = lib.SendNSQUsecase(v.NSQ, tmpByteOauthRunner)
 			}
 		}
 	}
@@ -627,13 +630,13 @@ func (v vehicleUsecase) CreateVehicleGroup(form []byte) (result string, serr ser
 		RequestID:    uuid.New().String(),
 		Time:         uttime.Now().String(),
 		Service:      "vehicle",
-		DatabaseName: "dev_runner_app",
+		DatabaseName: os.Getenv("DBV2_RUNNER"),
 		Payload:      string(tmpForm),
 		Query:        tmpQuery,
 	}
 
 	tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-	_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+	_ = lib.SendNSQUsecase(v.NSQ, tmpByteOauthRunner)
 
 	tmpChassisNumber := val["chassis_number"].(string)
 	tmpChassisNumberArray := strings.Split(tmpChassisNumber, ",")
@@ -653,13 +656,13 @@ func (v vehicleUsecase) CreateVehicleGroup(form []byte) (result string, serr ser
 			RequestID:    uuid.New().String(),
 			Time:         uttime.Now().String(),
 			Service:      "vehicle",
-			DatabaseName: "dev_runner_app",
+			DatabaseName: os.Getenv("DBV2_RUNNER"),
 			Payload:      string(tmpForm),
 			Query:        tmpQuery,
 		}
 
 		tmpByteOauthRunner, _ = json.Marshal(tmpOauthRunner)
-		_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+		_ = lib.SendNSQUsecase(v.NSQ, tmpByteOauthRunner)
 	}
 
 	return "", nil
@@ -700,13 +703,13 @@ func (v vehicleUsecase) UpdateVehicleGroup(form []byte) (result string, serr ser
 		RequestID:    uuid.New().String(),
 		Time:         uttime.Now().String(),
 		Service:      "vehicle",
-		DatabaseName: "dev_runner_app",
+		DatabaseName: os.Getenv("DBV2_RUNNER"),
 		Payload:      string(tmpForm),
 		Query:        tmpQuery,
 	}
 
 	tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-	_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+	_ = lib.SendNSQUsecase(v.NSQ, tmpByteOauthRunner)
 
 	tmpChassisNumber := val["chassis_number"].(string)
 	tmpChassisNumberArray := strings.Split(tmpChassisNumber, ",")
@@ -727,13 +730,13 @@ func (v vehicleUsecase) UpdateVehicleGroup(form []byte) (result string, serr ser
 			RequestID:    uuid.New().String(),
 			Time:         uttime.Now().String(),
 			Service:      "vehicle",
-			DatabaseName: "dev_runner_app",
+			DatabaseName: os.Getenv("DBV2_RUNNER"),
 			Payload:      string(tmpForm),
 			Query:        tmpQuery,
 		}
 
 		tmpByteOauthRunner, _ = json.Marshal(tmpOauthRunner)
-		_ = lib.SendNSQUsecase(tmpByteOauthRunner)
+		_ = lib.SendNSQUsecase(v.NSQ, tmpByteOauthRunner)
 	}
 
 	return "", nil

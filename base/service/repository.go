@@ -21,4 +21,5 @@ type VehicleRepo interface {
 
 type VehicleHistoryRepo interface {
 	VehicleHistory_GetByChassisRepo(form models.GetVehHistoryByChassisReq) (result models.VehHistoryByChassisResult, serr serror.SError)
+	VehicleHistory_GetRepo(form models.GetVehHistoryReq) (result models.VehHistoryListMetaResult, serr serror.SError)
 }
