@@ -45,7 +45,7 @@ func (v vehicleUsecase) CreateMtVehicle(form []byte) (result string, serr serror
 
 			if tmpMtVehicle {
 				_, _ = v.UpdateMtVehicle(form)
-				fmt.Println("============= create update =============")
+				fmt.Println("============= update vehicle =============")
 			} else {
 				fmt.Println("============= create vehicle =============")
 				tmpQueryVehicle := fmt.Sprintf(query.GetVehicle, vr.ChassisNumber)
@@ -200,7 +200,7 @@ func (v vehicleUsecase) CreateMtVehicle(form []byte) (result string, serr serror
 
 		if tmpMtVehicle {
 			_, _ = v.UpdateMtVehicle(form)
-			fmt.Println("============= create update =============")
+			fmt.Println("============= update vehicle =============")
 		} else {
 			fmt.Println("============= create vehicle =============")
 			tmpQueryVehicle := fmt.Sprintf(query.GetVehicle, val["chassis_number"].(string))
