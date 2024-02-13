@@ -13,6 +13,7 @@ import (
 	"github.com/uzzeet/uzzeet-gateway/libs/helper"
 	"github.com/uzzeet/uzzeet-gateway/libs/helper/serror"
 	"github.com/uzzeet/uzzeet-gateway/libs/utils/uttime"
+	"log"
 	"os"
 	"strings"
 )
@@ -40,7 +41,7 @@ func (v vehicleUsecase) CreateMtVehicle(form []byte) (result string, serr serror
 			var tmpMtVehicle bool
 			tmpQuery := fmt.Sprintf(query.CheckMtVehcile, vr.ChassisNumber)
 			if err := v.DB.QueryRow(tmpQuery).Scan(&tmpMtVehicle); err != nil {
-				fmt.Println(err.Error())
+				log.Println(err.Error() + " ====> " + tmpQuery)
 			}
 
 			if tmpMtVehicle {
@@ -51,7 +52,7 @@ func (v vehicleUsecase) CreateMtVehicle(form []byte) (result string, serr serror
 				tmpQueryVehicle := fmt.Sprintf(query.GetVehicle, vr.ChassisNumber)
 				rows, err := v.DB.Queryx(tmpQueryVehicle)
 				if err != nil {
-					fmt.Println(err.Error())
+					log.Println(err.Error() + " ====> " + tmpQueryVehicle)
 					return result, serror.New(err.Error())
 				}
 
@@ -73,7 +74,7 @@ func (v vehicleUsecase) CreateMtVehicle(form []byte) (result string, serr serror
 					if vv.ChassisNumber != "" {
 						var tmpMtVehicle bool
 						if err := v.DB.QueryRow(fmt.Sprintf(query.CheckMtVehcile, vr.ChassisNumber)).Scan(&tmpMtVehicle); err != nil {
-							fmt.Println(err.Error())
+							log.Println(err.Error() + " ====> " + fmt.Sprintf(query.CheckMtVehcile, vr.ChassisNumber))
 						}
 
 						if !tmpMtVehicle {
@@ -206,6 +207,7 @@ func (v vehicleUsecase) CreateMtVehicle(form []byte) (result string, serr serror
 			tmpQueryVehicle := fmt.Sprintf(query.GetVehicle, val["chassis_number"].(string))
 			rows, err := v.DB.Queryx(tmpQueryVehicle)
 			if err != nil {
+				log.Println(err.Error() + " ====> " + tmpQueryVehicle)
 				return result, serror.New(err.Error())
 			}
 
@@ -228,7 +230,7 @@ func (v vehicleUsecase) CreateMtVehicle(form []byte) (result string, serr serror
 
 					var tmpMtVehicle bool
 					if err := v.DB.QueryRow(fmt.Sprintf(query.CheckMtVehcile, val["chassis_number"].(string))).Scan(&tmpMtVehicle); err != nil {
-						fmt.Println(err.Error())
+						log.Println(err.Error() + " ====> " + fmt.Sprintf(query.CheckMtVehcile, val["chassis_number"].(string)))
 					}
 
 					if !tmpMtVehicle {
@@ -348,6 +350,7 @@ func (v vehicleUsecase) UpdateMtVehicle(form []byte) (result string, serr serror
 			tmpQueryVehicle := fmt.Sprintf(query.GetVehicle, vr.ChassisNumber)
 			rows, err := v.DB.Queryx(tmpQueryVehicle)
 			if err != nil {
+				log.Println(err.Error() + " ====> " + tmpQueryVehicle)
 				return result, serror.New(err.Error())
 			}
 
@@ -478,6 +481,7 @@ func (v vehicleUsecase) UpdateMtVehicle(form []byte) (result string, serr serror
 		tmpQueryVehicle := fmt.Sprintf(query.GetVehicle, val["chassis_number"].(string))
 		rows, err := v.DB.Queryx(tmpQueryVehicle)
 		if err != nil {
+			log.Println(err.Error() + " ====> " + tmpQueryVehicle)
 			return result, serror.New(err.Error())
 		}
 
