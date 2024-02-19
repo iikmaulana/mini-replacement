@@ -3,6 +3,7 @@ package lib
 import (
 	"github.com/nsqio/go-nsq"
 	"github.com/uzzeet/uzzeet-gateway/libs/helper/serror"
+	"log"
 	"os"
 )
 
@@ -18,15 +19,22 @@ type PayloadNsq struct {
 	Query        string `json:"query"`
 }
 
-func SendNSQUsecase(nsq *nsq.Producer, form []byte) (serr serror.SError) {
-
+func SendNSQUsecase(form []byte) (serr serror.SError) {
+	config := nsq.NewConfig()
+	host := os.Getenv("SENDER_NSQ_SERVER_REPLACEMENT")
 	topic := os.Getenv("SENDER_NSQ_TOPIC_REPLACEMENT")
-	err := nsq.Publish(topic, form)
+
+	producer, err := nsq.NewProducer(host, config)
 	if err != nil {
-		return serror.NewFromError(err)
+		log.Println(" ====> " + err.Error())
 	}
 
-	nsq.Stop()
+	defer producer.Stop()
+
+	errx := producer.Publish(topic, form)
+	if errx != nil {
+		log.Println(" ====> " + errx.Error())
+	}
 
 	return nil
 }

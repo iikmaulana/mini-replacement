@@ -13,6 +13,7 @@ import (
 	"github.com/uzzeet/uzzeet-gateway/libs/helper"
 	"github.com/uzzeet/uzzeet-gateway/libs/helper/serror"
 	"github.com/uzzeet/uzzeet-gateway/libs/utils/uttime"
+	"log"
 	"os"
 	"reflect"
 )
@@ -21,11 +22,11 @@ type customerUsecase struct {
 	DB               *sqlx.DB
 	userRepo         service.UserRepo
 	organizationRepo service.OrganizationRepo
-	NSQ              *nsq.Producer
+	NSQX             *nsq.Producer
 }
 
-func NewCustomerUsecase(db *sqlx.DB, userRepo service.UserRepo, organizationRepo service.OrganizationRepo, nsq *nsq.Producer) service.CustomerUsecase {
-	return customerUsecase{DB: db, userRepo: userRepo, organizationRepo: organizationRepo, NSQ: nsq}
+func NewCustomerUsecase(db *sqlx.DB, userRepo service.UserRepo, organizationRepo service.OrganizationRepo, nsqx *nsq.Producer) service.CustomerUsecase {
+	return customerUsecase{DB: db, userRepo: userRepo, organizationRepo: organizationRepo, NSQX: nsqx}
 }
 
 func (c customerUsecase) CreateMtMemberUsecase(form []byte) (result string, serr serror.SError) {
@@ -42,11 +43,12 @@ func (c customerUsecase) CreateMtMemberUsecase(form []byte) (result string, serr
 	var dealerId *string
 	if tmpOrganization.ParentID != nil {
 		if err := c.DB.QueryRow(fmt.Sprintf(query.GetDealerIdByOrganizationId, *tmpOrganization.ParentID)).Scan(&dealerId); err != nil {
-			fmt.Println("Dealer ID " + err.Error())
+			log.Println(err.Error() + " ====> " + fmt.Sprintf(query.GetDealerIdByOrganizationId, *tmpOrganization.ParentID))
 		}
 	}
 
 	if tmpOrganization.ID != "" {
+		log.Println("============= create member =============")
 		tmpDefaultValue := ""
 		if tmpOrganization.Name == nil {
 			tmpOrganization.Name = &tmpDefaultValue
@@ -77,8 +79,7 @@ func (c customerUsecase) CreateMtMemberUsecase(form []byte) (result string, serr
 			}
 		}
 
-		fmt.Println(tmpOrganization.ID)
-		fmt.Println(tmpMemberId)
+		log.Println(" ====> " + tmpOrganization.ID + " ====> " + tmpMemberId)
 
 		tmpQuery := fmt.Sprintf(query.CreateMtMember,
 			helper.StringToInt(tmpMemberId, 0),
@@ -102,7 +103,7 @@ func (c customerUsecase) CreateMtMemberUsecase(form []byte) (result string, serr
 		}
 
 		tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-		_ = c.NSQ.Publish(os.Getenv("SENDER_NSQ_TOPIC_REPLACEMENT"), tmpByteOauthRunner)
+		_ = c.NSQX.Publish(os.Getenv("SENDER_NSQ_TOPIC_REPLACEMENT"), tmpByteOauthRunner)
 
 		_, _ = c.CreateAuthRunnerUsecase(form)
 	}
@@ -133,10 +134,12 @@ func (c customerUsecase) UpdateMtMemberUsecase(form []byte) (result string, serr
 
 	var memberId string
 	if err := c.DB.QueryRow(fmt.Sprintf(query.GetMemberIdByOrganizationId, *tmpUser.OrganizationId)).Scan(&memberId); err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error() + " ====> " + fmt.Sprintf(query.GetMemberIdByOrganizationId, *tmpUser.OrganizationId))
 	}
 
 	if tmpOrganization.ID != "" {
+
+		log.Println("============= udpdate member =============")
 		tmpDefaultValue := ""
 		if tmpOrganization.Name == nil {
 			tmpOrganization.Name = &tmpDefaultValue
@@ -183,7 +186,7 @@ func (c customerUsecase) UpdateMtMemberUsecase(form []byte) (result string, serr
 			}
 
 			tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-			_ = lib.SendNSQUsecase(c.NSQ, tmpByteOauthRunner)
+			_ = lib.SendNSQUsecase(tmpByteOauthRunner)
 
 			_, _ = c.UpdateAuthRunnerUsecase(form)
 		}
@@ -235,22 +238,22 @@ func (c customerUsecase) CreateAuthRunnerUsecase(form []byte) (result string, se
 	if tmpRealm {
 		if val["realm_id"].(string) == lib.RealmIdDealer {
 			if err := c.DB.QueryRow(fmt.Sprintf(query.GetDealerIdByOrganizationId, val["organization_id"].(string))).Scan(&dealerId); err != nil {
-				fmt.Println(err.Error())
+				log.Println(err.Error() + " ====> " + " Customer")
 			}
 		} else if val["realm_id"].(string) == lib.RealmIdCustomer {
 			if tmpOrganization.ParentID != nil {
 				if err := c.DB.QueryRow(fmt.Sprintf(query.GetDealerIdByOrganizationId, *tmpOrganization.ParentID)).Scan(&dealerId); err != nil {
-					fmt.Println(err.Error())
+					log.Println(err.Error() + " ====> " + " Customer")
 				}
 			}
 
 			if err := c.DB.QueryRow(fmt.Sprintf(query.GetMemberIdByOrganizationId, *tmpUser.OrganizationId)).Scan(&memberId); err != nil {
-				fmt.Println(err.Error())
+				log.Println(err.Error() + " ====> " + " Customer")
 			}
 
 			if memberId == nil {
 				if err := c.DB.QueryRow(fmt.Sprintf(query.GetMemberIdByEmailAndMemberName, *tmpUser.OrganizationEmail, *tmpUser.OrganizationName)).Scan(&memberId); err != nil {
-					fmt.Println(err.Error())
+					log.Println(err.Error() + " ====> " + " Customer")
 				}
 			}
 		}
@@ -335,7 +338,7 @@ func (c customerUsecase) CreateAuthRunnerUsecase(form []byte) (result string, se
 					}
 
 					tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-					_ = lib.SendNSQUsecase(c.NSQ, tmpByteOauthRunner)
+					_ = lib.SendNSQUsecase(tmpByteOauthRunner)
 
 					if tmpRole == "13" || tmpRole == "14" {
 						_, _ = c.PrivacyPolicyUsecase(form, tmpUserId)
@@ -400,7 +403,7 @@ func (c customerUsecase) CreateAuthRunnerUsecase(form []byte) (result string, se
 						}
 
 						tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-						_ = lib.SendNSQUsecase(c.NSQ, tmpByteOauthRunner)
+						_ = lib.SendNSQUsecase(tmpByteOauthRunner)
 
 						if tmpRole == "13" || tmpRole == "14" {
 							_, _ = c.PrivacyPolicyUsecase(form, tmpUserId)
@@ -427,7 +430,7 @@ func (c customerUsecase) UpdateAuthRunnerUsecase(form []byte) (result string, se
 		if ok {
 			rows, err := c.DB.Queryx(query.GetUserByUserId, val["user_id"].(string))
 			if err != nil {
-				fmt.Println(err.Error())
+				log.Println(err.Error() + " ====> " + " Customer")
 				return result, serror.New(err.Error())
 			}
 
@@ -452,12 +455,12 @@ func (c customerUsecase) UpdateAuthRunnerUsecase(form []byte) (result string, se
 	if tmpRealm {
 		if val["realm_id"].(string) == lib.RealmIdDealer {
 			if err := c.DB.QueryRow(fmt.Sprintf(query.GetDealerIdByOrganizationId, val["organization_id"].(string))).Scan(&dealerId); err != nil {
-				fmt.Println(err.Error())
+				log.Println(err.Error() + " ====> " + " Customer")
 			}
 		} else if val["realm_id"].(string) == lib.RealmIdCustomer {
 			if tmpOrganization.ParentID != nil {
 				if err := c.DB.QueryRow(fmt.Sprintf(query.GetDealerIdByOrganizationId, *tmpOrganization.ParentID)).Scan(&dealerId); err != nil {
-					fmt.Println(err.Error())
+					log.Println(err.Error() + " ====> " + " Customer")
 				}
 			}
 		}
@@ -465,7 +468,7 @@ func (c customerUsecase) UpdateAuthRunnerUsecase(form []byte) (result string, se
 
 	var memberId *string
 	if err := c.DB.QueryRow(fmt.Sprintf(query.GetMemberIdByOrganizationId, tmpOrganization.ID)).Scan(&memberId); err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error() + " ====> " + " Customer")
 	}
 
 	var tmpUserId string
@@ -487,11 +490,11 @@ func (c customerUsecase) UpdateAuthRunnerUsecase(form []byte) (result string, se
 			_, userBefore := val["username_before"].(string)
 			if userBefore {
 				if err := c.DB.QueryRow(fmt.Sprintf(query.GetUserIdByUsername, val["username_before"].(string))).Scan(&tmpUserId); err != nil {
-					fmt.Println(err.Error())
+					log.Println(err.Error() + " ====> " + " Customer")
 				}
 			} else {
 				if err := c.DB.QueryRow(fmt.Sprintf(query.GetUserIdByUsername, val["username"].(string))).Scan(&tmpUserId); err != nil {
-					fmt.Println(err.Error())
+					log.Println(err.Error() + " ====> " + " Customer")
 				}
 			}
 
@@ -513,11 +516,11 @@ func (c customerUsecase) UpdateAuthRunnerUsecase(form []byte) (result string, se
 				_, userBefore := val["username_before"].(string)
 				if userBefore {
 					if err := c.DB.QueryRow(fmt.Sprintf(query.GetUserIdByUsername, val["username_before"].(string))).Scan(&tmpUserId); err != nil {
-						fmt.Println(err.Error())
+						log.Println(err.Error() + " ====> " + " Customer")
 					}
 				} else {
 					if err := c.DB.QueryRow(fmt.Sprintf(query.GetUserIdByUsername, val["super_username"].(string))).Scan(&tmpUserId); err != nil {
-						fmt.Println(err.Error())
+						log.Println(err.Error() + " ====> " + " Customer")
 					}
 				}
 			}
@@ -618,7 +621,7 @@ func (c customerUsecase) UpdateAuthRunnerUsecase(form []byte) (result string, se
 					}
 
 					tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-					_ = lib.SendNSQUsecase(c.NSQ, tmpByteOauthRunner)
+					_ = lib.SendNSQUsecase(tmpByteOauthRunner)
 				}
 			}
 		} else if *tmpUser.RealmId == lib.RealmIdCustomer {
@@ -688,7 +691,7 @@ func (c customerUsecase) UpdateAuthRunnerUsecase(form []byte) (result string, se
 						}
 
 						tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-						_ = lib.SendNSQUsecase(c.NSQ, tmpByteOauthRunner)
+						_ = lib.SendNSQUsecase(tmpByteOauthRunner)
 					}
 				}
 			}
@@ -702,7 +705,7 @@ func (c customerUsecase) UserActivationUsecase(form []byte) (result string, serr
 
 	var memberId *int64
 	if err := c.DB.QueryRow(fmt.Sprintf(query.GetMemberIdByOrganizationId, val.FieldByName("id").Interface().(string))).Scan(&memberId); err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error() + " ====> " + " Customer")
 	}
 
 	tmpUser, _ := c.userRepo.GetUserByUsernameRepo(val.FieldByName("username").Interface().(string))
@@ -725,7 +728,7 @@ func (c customerUsecase) UserActivationUsecase(form []byte) (result string, serr
 				}
 
 				tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-				_ = lib.SendNSQUsecase(c.NSQ, tmpByteOauthRunner)
+				_ = lib.SendNSQUsecase(tmpByteOauthRunner)
 			}
 		}
 	}
@@ -752,7 +755,7 @@ func (c customerUsecase) ChangePasswordUsecase(form []byte) (result string, serr
 	}
 
 	tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-	_ = lib.SendNSQUsecase(c.NSQ, tmpByteOauthRunner)
+	_ = lib.SendNSQUsecase(tmpByteOauthRunner)
 
 	return "", nil
 }
@@ -763,7 +766,7 @@ func (c customerUsecase) PrivacyPolicyUsecase(form []byte, tmpUserId string) (re
 
 	var tmpPrivacyPolicy bool
 	if err := c.DB.QueryRow(fmt.Sprintf(query.CheckPrivacyPolicy, tmpUserId)).Scan(&tmpPrivacyPolicy); err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error() + " ====> " + " Customer")
 	}
 
 	if !tmpPrivacyPolicy {
@@ -784,7 +787,7 @@ func (c customerUsecase) PrivacyPolicyUsecase(form []byte, tmpUserId string) (re
 		}
 
 		tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-		_ = lib.SendNSQUsecase(c.NSQ, tmpByteOauthRunner)
+		_ = lib.SendNSQUsecase(tmpByteOauthRunner)
 	}
 
 	return "", nil
@@ -796,13 +799,13 @@ func (c customerUsecase) ApprovePrivacyPolicyUsecase(form []byte) (result string
 
 	var tmpUserId string
 	if err := c.DB.QueryRow(fmt.Sprintf(query.GetUserIdByUsername, val["username"].(string))).Scan(&tmpUserId); err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error() + " ====> " + " Customer")
 	}
 
 	if tmpUserId != "" {
 		var tmpPrivacyPolicy bool
 		if err := c.DB.QueryRow(fmt.Sprintf(query.CheckPrivacyPolicy, tmpUserId)).Scan(&tmpPrivacyPolicy); err != nil {
-			fmt.Println(err.Error())
+			log.Println(err.Error() + " ====> " + " Customer")
 		}
 
 		if tmpPrivacyPolicy {
@@ -821,7 +824,7 @@ func (c customerUsecase) ApprovePrivacyPolicyUsecase(form []byte) (result string
 			}
 
 			tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-			_ = lib.SendNSQUsecase(c.NSQ, tmpByteOauthRunner)
+			_ = lib.SendNSQUsecase(tmpByteOauthRunner)
 		}
 
 	}
@@ -840,7 +843,7 @@ func (c customerUsecase) DeleteAuthRunnerUsecase(form []byte) (result string, se
 		if ok {
 			rows, err := c.DB.Queryx(query.GetUserByUserIdDeleted, val["id"].(string))
 			if err != nil {
-				fmt.Println(err.Error())
+				log.Println(err.Error() + " ====> " + " Customer")
 				return result, serror.New(err.Error())
 			}
 
@@ -860,7 +863,7 @@ func (c customerUsecase) DeleteAuthRunnerUsecase(form []byte) (result string, se
 	if tmpUser.Username != nil {
 		var tmpUserId string
 		if err := c.DB.QueryRow(fmt.Sprintf(query.GetUserIdByUsername, *tmpUser.Username)).Scan(&tmpUserId); err != nil {
-			fmt.Println(err.Error())
+			log.Println(err.Error() + " ====> " + " Customer")
 		}
 
 		if tmpUserId != "" {
@@ -879,7 +882,7 @@ func (c customerUsecase) DeleteAuthRunnerUsecase(form []byte) (result string, se
 			}
 
 			tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-			_ = lib.SendNSQUsecase(c.NSQ, tmpByteOauthRunner)
+			_ = lib.SendNSQUsecase(tmpByteOauthRunner)
 		}
 	}
 

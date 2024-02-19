@@ -46,9 +46,9 @@ func (v vehicleUsecase) CreateMtVehicle(form []byte) (result string, serr serror
 
 			if tmpMtVehicle {
 				_, _ = v.UpdateMtVehicle(form)
-				fmt.Println("============= update vehicle =============")
+				log.Println("============= update vehicle =============")
 			} else {
-				fmt.Println("============= create vehicle =============")
+				log.Println("============= create vehicle =============")
 				tmpQueryVehicle := fmt.Sprintf(query.GetVehicle, vr.ChassisNumber)
 				rows, err := v.DB.Queryx(tmpQueryVehicle)
 				if err != nil {
@@ -61,13 +61,13 @@ func (v vehicleUsecase) CreateMtVehicle(form []byte) (result string, serr serror
 				for rows.Next() {
 					tmpVehicleHistory := models.VehicleV3{}
 					if err := rows.StructScan(&tmpVehicleHistory); err != nil {
-						fmt.Println(err.Error())
+						log.Println(err.Error())
 					}
 					tmpVehicleHistoryArray = append(tmpVehicleHistoryArray, tmpVehicleHistory)
 				}
 
 				if len(tmpVehicleHistoryArray) == 0 {
-					fmt.Println("============= create vehicle gagal =============")
+					log.Println("============= create vehicle gagal =============")
 				}
 
 				for _, vv := range tmpVehicleHistoryArray {
@@ -187,7 +187,7 @@ func (v vehicleUsecase) CreateMtVehicle(form []byte) (result string, serr serror
 								Query:        tmpQuery,
 							}
 							tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-							_ = lib.SendNSQUsecase(v.NSQ, tmpByteOauthRunner)
+							_ = lib.SendNSQUsecase(tmpByteOauthRunner)
 						}
 					}
 				}
@@ -196,14 +196,14 @@ func (v vehicleUsecase) CreateMtVehicle(form []byte) (result string, serr serror
 	} else {
 		var tmpMtVehicle bool
 		if err := v.DB.QueryRow(fmt.Sprintf(query.CheckMtVehcile, val["chassis_number"].(string))).Scan(&tmpMtVehicle); err != nil {
-			fmt.Println(err.Error())
+			log.Println(err.Error())
 		}
 
 		if tmpMtVehicle {
 			_, _ = v.UpdateMtVehicle(form)
-			fmt.Println("============= update vehicle =============")
+			log.Println("============= update vehicle =============")
 		} else {
-			fmt.Println("============= create vehicle =============")
+			log.Println("============= create vehicle =============")
 			tmpQueryVehicle := fmt.Sprintf(query.GetVehicle, val["chassis_number"].(string))
 			rows, err := v.DB.Queryx(tmpQueryVehicle)
 			if err != nil {
@@ -216,13 +216,13 @@ func (v vehicleUsecase) CreateMtVehicle(form []byte) (result string, serr serror
 			for rows.Next() {
 				tmpVehicleHistory := models.VehicleV3{}
 				if err := rows.StructScan(&tmpVehicleHistory); err != nil {
-					fmt.Println(err.Error())
+					log.Println(err.Error())
 				}
 				tmpVehicleHistoryArray = append(tmpVehicleHistoryArray, tmpVehicleHistory)
 			}
 
 			if len(tmpVehicleHistoryArray) == 0 {
-				fmt.Println("============= create vehicle gagal =============")
+				log.Println("============= create vehicle gagal =============")
 			}
 
 			for _, vv := range tmpVehicleHistoryArray {
@@ -331,7 +331,7 @@ func (v vehicleUsecase) CreateMtVehicle(form []byte) (result string, serr serror
 							Query:        tmpQuery,
 						}
 						tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-						_ = lib.SendNSQUsecase(v.NSQ, tmpByteOauthRunner)
+						_ = lib.SendNSQUsecase(tmpByteOauthRunner)
 					}
 				}
 			}
@@ -359,7 +359,7 @@ func (v vehicleUsecase) UpdateMtVehicle(form []byte) (result string, serr serror
 			for rows.Next() {
 				tmpVehicleHistory := models.VehicleV3{}
 				if err := rows.StructScan(&tmpVehicleHistory); err != nil {
-					fmt.Println(err.Error())
+					log.Println(err.Error())
 				}
 				tmpVehicleHistoryArray = append(tmpVehicleHistoryArray, tmpVehicleHistory)
 			}
@@ -473,7 +473,7 @@ func (v vehicleUsecase) UpdateMtVehicle(form []byte) (result string, serr serror
 						Query:        tmpQuery,
 					}
 					tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-					_ = lib.SendNSQUsecase(v.NSQ, tmpByteOauthRunner)
+					_ = lib.SendNSQUsecase(tmpByteOauthRunner)
 				}
 			}
 		}
@@ -490,7 +490,7 @@ func (v vehicleUsecase) UpdateMtVehicle(form []byte) (result string, serr serror
 		for rows.Next() {
 			tmpVehicleHistory := models.VehicleV3{}
 			if err := rows.StructScan(&tmpVehicleHistory); err != nil {
-				fmt.Println(err.Error())
+				log.Println(err.Error())
 			}
 			tmpVehicleHistoryArray = append(tmpVehicleHistoryArray, tmpVehicleHistory)
 		}
@@ -604,7 +604,7 @@ func (v vehicleUsecase) UpdateMtVehicle(form []byte) (result string, serr serror
 					Query:        tmpQuery,
 				}
 				tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-				_ = lib.SendNSQUsecase(v.NSQ, tmpByteOauthRunner)
+				_ = lib.SendNSQUsecase(tmpByteOauthRunner)
 			}
 		}
 	}
@@ -618,7 +618,7 @@ func (v vehicleUsecase) CreateVehicleGroup(form []byte) (result string, serr ser
 
 	var memberId string
 	if err := v.DB.QueryRow(fmt.Sprintf(query.GetMemberIdByOrganizationId, val["owner_id"].(string))).Scan(&memberId); err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 	}
 
 	tmpGroupId := lib.RandomCharacter(14)
@@ -640,14 +640,14 @@ func (v vehicleUsecase) CreateVehicleGroup(form []byte) (result string, serr ser
 	}
 
 	tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-	_ = lib.SendNSQUsecase(v.NSQ, tmpByteOauthRunner)
+	_ = lib.SendNSQUsecase(tmpByteOauthRunner)
 
 	tmpChassisNumber := val["chassis_number"].(string)
 	tmpChassisNumberArray := strings.Split(tmpChassisNumber, ",")
 	for _, vCN := range tmpChassisNumberArray {
 		var tmpVehicleId int
 		if err := v.DB.QueryRow(fmt.Sprintf(query.GetVehicleIdByChassis, vCN)).Scan(&tmpVehicleId); err != nil {
-			fmt.Println(err.Error())
+			log.Println(err.Error())
 		}
 
 		tmpQuery = fmt.Sprintf(query.CreateMSVehicleGroup,
@@ -666,7 +666,7 @@ func (v vehicleUsecase) CreateVehicleGroup(form []byte) (result string, serr ser
 		}
 
 		tmpByteOauthRunner, _ = json.Marshal(tmpOauthRunner)
-		_ = lib.SendNSQUsecase(v.NSQ, tmpByteOauthRunner)
+		_ = lib.SendNSQUsecase(tmpByteOauthRunner)
 	}
 
 	return "", nil
@@ -678,20 +678,20 @@ func (v vehicleUsecase) UpdateVehicleGroup(form []byte) (result string, serr ser
 
 	var memberId string
 	if err := v.DB.QueryRow(fmt.Sprintf(query.GetMemberIdByOrganizationId, val["owner_id"].(string))).Scan(&memberId); err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 	}
 
 	var vehicleGroup string
 	if err := v.DB.QueryRow(fmt.Sprintf(query.SelectVehicleGroup, memberId, val["vehicle_group_name"].(string))).Scan(&vehicleGroup); err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 	}
 
 	if _, err := v.DB.Queryx(fmt.Sprintf(query.DeleteVehicleGroup, vehicleGroup)); err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 	}
 
 	if _, err := v.DB.Queryx(fmt.Sprintf(query.DeleteMsVehicleGroup, vehicleGroup)); err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 	}
 
 	tmpGroupId := lib.RandomCharacter(14)
@@ -713,7 +713,7 @@ func (v vehicleUsecase) UpdateVehicleGroup(form []byte) (result string, serr ser
 	}
 
 	tmpByteOauthRunner, _ := json.Marshal(tmpOauthRunner)
-	_ = lib.SendNSQUsecase(v.NSQ, tmpByteOauthRunner)
+	_ = lib.SendNSQUsecase(tmpByteOauthRunner)
 
 	tmpChassisNumber := val["chassis_number"].(string)
 	tmpChassisNumberArray := strings.Split(tmpChassisNumber, ",")
@@ -721,7 +721,7 @@ func (v vehicleUsecase) UpdateVehicleGroup(form []byte) (result string, serr ser
 
 		var tmpVehicleId int
 		if err := v.DB.QueryRow(fmt.Sprintf(query.GetVehicleIdByChassis, vCN)).Scan(&tmpVehicleId); err != nil {
-			fmt.Println(err.Error())
+			log.Println(err.Error())
 		}
 
 		tmpQuery = fmt.Sprintf(query.CreateMSVehicleGroup,
@@ -740,7 +740,7 @@ func (v vehicleUsecase) UpdateVehicleGroup(form []byte) (result string, serr ser
 		}
 
 		tmpByteOauthRunner, _ = json.Marshal(tmpOauthRunner)
-		_ = lib.SendNSQUsecase(v.NSQ, tmpByteOauthRunner)
+		_ = lib.SendNSQUsecase(tmpByteOauthRunner)
 	}
 
 	return "", nil
